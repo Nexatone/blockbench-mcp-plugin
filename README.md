@@ -4,6 +4,11 @@ Maintained by **Josshy**, based on the original plugin by Jason J. Gardner.
 This repository starts with an independent import. Original contributor credits
 and the GPL-3.0 license are preserved.
 
+The maintained version line starts at **1.0.0**. Read the
+[changelog](CHANGELOG.md) for versioned changes. Contributors and coding agents
+must follow [AGENTS.md](AGENTS.md), [CONTRIBUTING.md](CONTRIBUTING.md), and the
+[versioning guide](VERSIONING.md), including a version-impact decision for each PR.
+
 https://github.com/user-attachments/assets/ab1b7e63-b6f0-4d5b-85ab-79d328de31db
 
 ## Plugin Installation

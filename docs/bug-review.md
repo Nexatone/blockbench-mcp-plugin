@@ -451,9 +451,9 @@ normal `bun run dev` and `bun run build` commands both completed successfully.
 
 Load `dist/mcp.js` in Blockbench via **File → Plugins → Load Plugin from File**.
 After rebuilding, reload the local MCP plugin and reconnect clients. Plugin
-version stays **1.6.1**; confirm the local file path, a new plugin lifecycle
-function instance after reload, and the validated execution wrapper, not version
-alone. `bun run build` creates a minified artifact at the same path; the final
+version was **1.6.1** during these historical checks; confirm the local file path,
+a new plugin lifecycle function instance after reload, and the validated
+execution wrapper, not version alone. `bun run build` creates a minified artifact at the same path; the final
 artifact left locally is a development build with `dist/mcp.js.map`.
 
 With that development plugin loaded on `127.0.0.1:3000/bb-mcp`, run:

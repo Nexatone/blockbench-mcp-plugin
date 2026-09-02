@@ -91,8 +91,9 @@ and every codec/display-slot combination are not claimed as verified.
 Build with `bun run dev`, then use **File → Plugins → Load Plugin from File** and
 choose this repository's `dist/mcp.js`. Uninstall the URL-loaded MCP Server first.
 Reload after rebuilding and reconnect the client. Confirm the source is the
-local file: version `1.6.1` alone does not identify this patch. The hosted nightly
-URL changes after these fixes are merged and the main-branch deployment finishes.
+local file; these historical checks used `1.6.1`. Read `package.json` for the
+current version. The hosted nightly URL changes after these fixes are merged and
+the main-branch deployment finishes.
 
 For an existing URL installation, wait for that deployment, open **File → Plugins
 → Installed → MCP Server**, and click **Reload**. Blockbench fetches the plugin

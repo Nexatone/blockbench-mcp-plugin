@@ -29,7 +29,7 @@ No UV rescaling or unrelated texture resizing occurs.
    copy; loading the hosted URL will not test this change. Keep unrelated project
    tabs open and use a new Bedrock Entity project for verification.
 3. After rebuilding, reload the local MCP plugin and reconnect the MCP client.
-   Confirm the plugin source is the local file. The version remains 1.6.1, so the
+   Confirm the plugin source is the local file. The historical fix used 1.6.1, so the
    version alone does not identify the patched build.
 4. Connect to the configured endpoint (default `http://localhost:3000/bb-mcp`).
    `bunx @modelcontextprotocol/inspector` can be used as a client.
