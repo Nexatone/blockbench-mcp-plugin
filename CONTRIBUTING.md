@@ -26,21 +26,30 @@ Local testing in Blockbench: File → Plugins → Load Plugin from File → sele
 
 ## Automated Checks
 
-### GitHub Actions and hosted previews
+### GitHub Actions and Pages deployment
 
-The Deploy workflow builds/tests the plugin and creates an independent `gh-pages`
-branch automatically on its first authorized deployment. For hosted previews,
-open repository **Settings → Pages** and select **Deploy from a branch**,
-**gh-pages**, **/(root)**, then save. Re-run the deploy job after configuring it.
-Pages setup is separate from a passing plugin build; before setup, the workflow
-stores the files and reports the missing setting without claiming a live preview.
+The **Build and deploy** workflow uses Bun 1.3.8 and the frozen lockfile to run the
+regression tests, build the production plugin, and generate the documentation.
+PRs targeting `main` run these checks. Successful pushes to `main` also publish
+the plugin under `nightly/` and documentation at the site root. The manual **Run
+workflow** button deploys only when `main` is selected.
 
-No personal access token or repository secret is needed. The workflow requests
-`contents: write`, `pages: write` and `pull-requests: write` for the built-in
-`GITHUB_TOKEN`; the repository-wide default may remain read-only. It explicitly
-requests a Pages build after publishing files because pushes using `GITHUB_TOKEN`
-do not trigger Pages builds automatically. Do not select **GitHub Actions** as the
-Pages source for this branch-based publishing workflow.
+The existing Pages settings stay **Deploy from a branch → gh-pages → /(root)**.
+The plugin URL remains
+`https://itsjosshy.github.io/blockbench-mcp-plugin/nightly/mcp.js`.
+After the Pages deployment finishes, reload the URL-installed MCP Server in
+Blockbench and reconnect the MCP client.
+
+PR previews, preview cleanup, bot comments and tag/release deployments are not
+part of this workflow. Test unmerged changes by building and loading `dist/mcp.js`
+locally. Existing unrelated files on `gh-pages` are preserved.
+
+The build job has read-only repository access. Only the main-branch deploy job
+gets `contents: write` and `pages: write`; the short-lived site artifact transfers
+built files between those jobs. No extra secrets are needed. The deploy job
+explicitly requests a Pages build because `GITHUB_TOKEN` pushes do not trigger
+one automatically. GitHub's generated **pages-build-deployment** workflow remains
+necessary to publish the existing branch-based site.
 
 ### Local checks
 

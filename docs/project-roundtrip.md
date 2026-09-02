@@ -100,10 +100,9 @@ again from its configured URL. Reconnect the MCP client afterward. If reinstalli
 is necessary, use **Load Plugin from URL** with
 `https://itsjosshy.github.io/blockbench-mcp-plugin/nightly/mcp.js`.
 
-Before merging, the PR's deployment comment links to a temporary preview plugin.
-Install that URL separately after uninstalling the current MCP Server if testing
-the PR immediately. Switch back to the nightly URL after merging: PR preview
-directories are removed when their PR closes.
+Before merging, build and load `dist/mcp.js` locally to test the PR. CI checks
+unmerged PRs but publishes only successful `main` builds; there are no hosted PR
+previews.
 
 Existing Entity projects are not automatically converted. Re-import the original
 geometry using the patched tool to get a separate Block project; retain any
