@@ -1,5 +1,40 @@
 # Repository Guidelines
 
+## Required Agent Workflow
+
+1. Read this file, `README.md`, `CONTRIBUTING.md`, `VERSIONING.md`, and the latest
+   `CHANGELOG.md` entry before changing the project. Inspect Git status, the
+   working branch and remotes; preserve existing work, license and attribution.
+2. Identify the affected MCP tools, Blockbench APIs and user-visible behavior.
+   Follow the existing registration/schema patterns. Verify native API behavior
+   against the relevant Blockbench version instead of guessing from type stubs.
+3. Implement the requested scope and choose the version impact using
+   `VERSIONING.md`. Every plugin-affecting PR must update `package.json` and its
+   changelog entry; docs/test/CI-only changes must explain why no bump is needed.
+   Bump once for the whole PR, not once per commit. Recheck against current `main`
+   before publishing to avoid reusing another merged PR's version.
+4. Regenerate affected tracked assets, run the applicable checks below and test
+   changed behavior. Preserve unrelated open projects during live testing. Report
+   pre-existing failures separately; do not claim a live check that was not run.
+5. Review the final diff. Report behavior changes, old/new version (or no-bump
+   reason), validation, limitations and loading instructions. Follow the user's
+   current authorization for commits, pushes, PRs, merges and releases; this file
+   does not grant additional permission to publish or merge.
+
+## Version and Compatibility Rules
+
+- `package.json` is the only editable source of the plugin version. Runtime code
+  must use `VERSION` from `lib/constants.ts`; generators read the package version.
+- Regenerate `prompts/manifest.json`, `docs/api.json` and `docs/index.html` after a
+  bump. Build `dist/mcp.js` to verify the version, but do not commit `dist/`.
+- Use semantic versioning for MCP schemas/results, settings, saved data and
+  runtime behavior. See `VERSIONING.md` for the decision table and exact sequence.
+- The maintainer-requested `1.6.1` → `1.0.0` reset starts Josshy's version line.
+  It is a one-time exception, not permission for future agents to reset versions.
+- Keep historical verification versions unchanged and label them as historical.
+- Use `CHANGELOG.md` for concise user-facing changes and migration notes. Do not
+  create version tags or GitHub releases just to update package metadata.
+
 ## Project Structure & Module Organization
 - `index.ts`: Blockbench plugin entry (registers MCP server and UI).
 - `server/`: MCP server glue (`server.ts`), `tools/`, `resources.ts`, `prompts.ts`.
@@ -11,11 +46,15 @@
 - `build/`: Build scripts (`index.ts`, `utils.ts`, `plugins.ts`, `docs.ts`, `docs-manifest.ts`).
 
 ## Build, Test, and Development Commands
-- `bun install`: Install dependencies.
+- `bun install --frozen-lockfile`: Install the locked dependencies (Bun 1.3.8).
+- `bun run test`: Run the Bun regression suite.
+- `bun run typecheck`: Run TypeScript checks; compare failures to the baseline.
 - `bun run dev`: Build once with sourcemaps.
 - `bun run dev:watch`: Rebuild on change (watch mode).
 - `bun run build`: Minified production build to `dist/mcp.js`.
-- `bun run ./build.ts --clean`: Remove `dist/` before a fresh build.
+- `bun run ./build --clean`: Clean build output; use only if `dist/` contains no
+  verification artifacts that need preserving. Ordinary builds do not need it.
+- `bun run prompts:build`: Regenerate the bundled prompt manifest.
 - `bun run docs:build`: Generate API documentation from Zod schemas to `docs/`.
 - `bun run docs:serve`: Serve the generated docs locally with Tailwind processing.
 - `bunx @modelcontextprotocol/inspector`: Launch MCP Inspector for local testing.
@@ -63,7 +102,7 @@ export function registerMyTools() {
 
 4. **Register in `server/tools.ts`**: Import and call your `registerXxxTools()` function.
 
-5. **Regenerate docs**: Run `bun run docs` to update `docs/api.json` and `docs/index.html`.
+5. **Regenerate docs**: Run `bun run docs:build` to update `docs/api.json` and `docs/index.html` without starting a server.
 
 ### Critical Rule: No Blockbench Globals in Schemas
 
@@ -88,13 +127,18 @@ Prompt and resource specs are defined **inline in the manifest** (not imported f
 - Docs array naming: `{domainName}ToolDocs` (e.g., `cubeToolDocs`).
 
 ## Testing Guidelines
-- Automated tests are not set up yet. For changes, provide manual verification steps.
+- Automated tests use Bun and include real canvas/PNG and loopback MCP checks.
+- Run `bun run test`, the applicable typecheck, production build and docs build.
+  There is no configured lint command. Typecheck has known existing diagnostics;
+  record current results rather than treating a historic count as a passing gate.
 - Validate builds with Blockbench by loading `dist/mcp.js` and exercising changed tools/resources.
 - When adding tests, prefer Bun's test runner or Vitest; co-locate near source or use `tests/`.
 
 ## Commit & Pull Request Guidelines
 - Commits: Use conventional prefixes (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`). Avoid vague "update"; be specific (e.g., `feat: add mesh selection tools`).
 - PRs: Include scope/summary, linked issues, screenshots/GIFs for UI changes, and steps to reproduce/test. Note any new tools, resources, settings, or breaking changes.
+- Complete the PR template's version/changelog and validation sections. Apply
+  `VERSIONING.md` even when the user's request does not explicitly mention a bump.
 
 ## Security & Configuration Tips
 - Server config lives in Blockbench Settings: MCP port and endpoint (defaults `:3000/bb-mcp`).

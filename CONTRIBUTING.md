@@ -2,6 +2,21 @@
 
 Thank you for improving the Blockbench MCP plugin. This project uses TypeScript and Bun. Please keep changes focused, documented, and easy to verify inside Blockbench.
 
+## Required contribution process
+
+Read [AGENTS.md](AGENTS.md) and [VERSIONING.md](VERSIONING.md) before editing. Start
+with the current Git state and latest [changelog](CHANGELOG.md); preserve existing
+work and attribution. Implement and verify the requested behavior, then review
+the diff and complete the PR template.
+
+Every PR must explain its version impact. Bump `package.json` once per
+plugin-affecting PR, record the changes in `CHANGELOG.md`, and regenerate the
+prompt/API assets. Use patch for compatible fixes, minor for compatible additions,
+and major for incompatible contracts. Documentation/test/CI-only changes can keep
+the version if they do not alter plugin behavior; state that reason explicitly.
+Recheck the target version against current `main` before publishing or merging.
+See the versioning guide for exact commands, validation and update instructions.
+
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/jasonjgardner/blockbench-mcp-plugin)
 
 ## Prerequisites
