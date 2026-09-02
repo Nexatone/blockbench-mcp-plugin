@@ -1840,7 +1840,7 @@
         </div>
       </div>
       <p class="card-title">Import GeoJSON</p>
-      <p class="card-desc">Imports Minecraft Bedrock geometry JSON into a new isolated project. Accepts inline JSON, a local path/file URL, an application/json data URL, or HTTP(S). Existing projects are preserved.</p>
+      <p class="card-desc">Imports Minecraft Bedrock geometry JSON into a new isolated project. Geometry with item_display_transforms uses Bedrock Block; otherwise uses Bedrock Entity. Accepts inline JSON, a local path/file URL, an application/json data URL, or HTTP(S). Existing projects are preserved. Exports use Blockbench's native format version and normalized display settings, not a byte-identical JSON round trip.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3708,7 +3708,7 @@
         </div>
       </div>
       <p class="card-title">Eval</p>
-      <p class="card-desc">Evaluates the given expression and logs it to the console. Do not pass `console` commands as they will not work.</p>
+      <p class="card-desc">Evaluates JavaScript and returns its result, including without an open project. Does not create an automatic Undo edit: scripts that modify a project must use Undo.initEdit with the relevant aspects and Undo.finishEdit themselves. Script errors are reported as tool errors. Do not pass console commands or comments.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -4516,7 +4516,7 @@
       </section>
 
       <footer class="page-footer">
-        Generated 2026-09-02T17:56:49.410Z from Zod schemas
+        Generated 2026-09-02T18:43:46.142Z from Zod schemas
       </footer>
     </main>
   </div>

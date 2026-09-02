@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-09-02T17:56:49.410Z",
+  "generatedAt": "2026-09-02T18:43:46.142Z",
   "tools": [
     {
       "name": "place_cube",
@@ -2642,7 +2642,7 @@
     {
       "name": "from_geo_json",
       "title": "Import GeoJSON",
-      "description": "Imports Minecraft Bedrock geometry JSON into a new isolated project. Accepts inline JSON, a local path/file URL, an application/json data URL, or HTTP(S). Existing projects are preserved.",
+      "description": "Imports Minecraft Bedrock geometry JSON into a new isolated project. Geometry with item_display_transforms uses Bedrock Block; otherwise uses Bedrock Entity. Accepts inline JSON, a local path/file URL, an application/json data URL, or HTTP(S). Existing projects are preserved. Exports use Blockbench's native format version and normalized display settings, not a byte-identical JSON round trip.",
       "status": "stable",
       "category": "Import/Export",
       "annotations": {
@@ -5438,7 +5438,7 @@
     {
       "name": "risky_eval",
       "title": "Eval",
-      "description": "Evaluates the given expression and logs it to the console. Do not pass `console` commands as they will not work.",
+      "description": "Evaluates JavaScript and returns its result, including without an open project. Does not create an automatic Undo edit: scripts that modify a project must use Undo.initEdit with the relevant aspects and Undo.finishEdit themselves. Script errors are reported as tool errors. Do not pass console commands or comments.",
       "status": "stable",
       "category": "UI Interaction",
       "annotations": {
