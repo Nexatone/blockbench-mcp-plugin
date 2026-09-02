@@ -100,7 +100,7 @@ export const uiToolDocs: ToolSpec[] = [
   {
     name: "risky_eval",
     description:
-      "Evaluates the given expression and logs it to the console. Do not pass `console` commands as they will not work.",
+      "Evaluates JavaScript and returns its result, including without an open project. Does not create an automatic Undo edit: scripts that modify a project must use Undo.initEdit with the relevant aspects and Undo.finishEdit themselves. Script errors are reported as tool errors. Do not pass console commands or comments.",
     annotations: {
       title: "Eval",
       destructiveHint: true,
@@ -188,25 +188,13 @@ export function registerUITools() {
     {
       ...uiToolDocs[1],
       async execute({ code }) {
-        try {
-          Undo.initEdit({
-            elements: [],
-            outliner: true,
-            collections: [],
-          });
-
-          const result = await eval(code.trim());
-
-          if (result !== undefined) {
-            return JSON.stringify(result);
-          }
-
-          return "(Code executed successfully, but no result was returned.)";
-        } catch (error) {
-          return `Error executing code: ${error}`;
-        } finally {
-          Undo.finishEdit("Agent executed code");
+        // Undo is project-scoped. Arbitrary code may inspect the start screen,
+        // switch projects, or manage its own edit with different Undo aspects.
+        const result = await eval(code.trim());
+        if (result !== undefined) {
+          return JSON.stringify(result);
         }
+        return "(Code executed successfully, but no result was returned.)";
       },
     },
     uiToolDocs[1].status

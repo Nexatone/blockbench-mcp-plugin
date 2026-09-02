@@ -7,6 +7,6 @@ export async function rpc(method,params={}) {
 }
 export async function connect(){session=undefined;return rpc('initialize',{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'bug-review-fix-verification',version:'1'}});}
 export async function call(name,args={}) {const r=await rpc('tools/call',{name,arguments:args});if(r.isError)throw Error(JSON.stringify(r));return r;}
-export async function inspect(code){const r=await call('risky_eval',{code:'Undo.cancelEdit(false); '+code});const text=r.content.find(c=>c.type==='text')?.text;if(text?.startsWith('Error executing'))throw Error(text+'; code: '+code);return JSON.parse(text);}
+export async function inspect(code){const r=await call('risky_eval',{code});const text=r.content.find(c=>c.type==='text')?.text;if(text?.startsWith('Error executing'))throw Error(text+'; code: '+code);return JSON.parse(text);}
 export const log=(label,value)=>{console.log(JSON.stringify({label,value}));return value;};
 export async function reload(){await inspect('setTimeout(()=>Plugins.all.find(p=>p.id==="mcp").reload(),100);true');await new Promise(r=>setTimeout(r,1600));for(let n=0;n<20;n++){try{await connect();return;}catch(e){if(n===19)throw e;await new Promise(r=>setTimeout(r,500));}}}

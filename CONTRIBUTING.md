@@ -164,6 +164,12 @@ See `server/prompts.ts` for examples using the `readPrompt` macro to embed promp
 - Call out new tools, resources, settings, or breaking changes.
 
 ## Manual Verification Checklist
+
+For project-free evaluation and Bedrock display round trips, run
+`bun tests/live/project-roundtrip.mjs` with the patched plugin loaded. See
+[the reproduction and loading guide](docs/project-roundtrip.md) for expected
+version normalization, Undo behavior, saved-project checks and limitations.
+
 - Build: `bun run build` (or `bun run dev`) and confirm `dist/mcp.js` updates.
 - Load: In Blockbench → File → Plugins → Load Plugin from File → pick `dist/mcp.js`.
 - Settings: Confirm MCP port/endpoint under Settings → General (defaults `3000` and `/bb-mcp`).
