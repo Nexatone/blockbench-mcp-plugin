@@ -2,6 +2,18 @@
 
 **FOR AGENTS USING CODE EVALUATION TOOLS (e.g., `risky_eval`, code execution, REPL tools)**
 
+## Project state and Undo
+
+`risky_eval` works on the start screen without an open project. Check `Project`
+before accessing project-specific APIs. It returns the evaluated result and
+reports script exceptions as MCP tool errors.
+
+There is no automatic Undo wrapper. Read-only inspection must not start or cancel
+an edit. For modifications, prefer a dedicated MCP tool or explicitly use
+`Undo.initEdit` with the affected aspects and `Undo.finishEdit`. Keep that edit in
+one project; do not leave an edit open while switching or closing tabs. An
+arbitrary script is not automatically rolled back if it throws.
+
 ## Critical Security Changes in Blockbench v5.0+
 
 ### ⚠️ BREAKING: Global Node.js APIs Removed

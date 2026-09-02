@@ -17,7 +17,7 @@ export const fromGeoJsonParameters = z.object({
 export const importToolDocs: ToolSpec[] = [
   {
     name: "from_geo_json",
-    description: "Imports Minecraft Bedrock geometry JSON into a new isolated project. Accepts inline JSON, a local path/file URL, an application/json data URL, or HTTP(S). Existing projects are preserved.",
+    description: "Imports Minecraft Bedrock geometry JSON into a new isolated project. Geometry with item_display_transforms uses Bedrock Block; otherwise uses Bedrock Entity. Accepts inline JSON, a local path/file URL, an application/json data URL, or HTTP(S). Existing projects are preserved. Exports use Blockbench's native format version and normalized display settings, not a byte-identical JSON round trip.",
     annotations: {
       title: "Import GeoJSON",
       destructiveHint: true,
@@ -36,13 +36,28 @@ export function registerImportTools() {
         if (!fs) throw new Error("File access was denied.");
         return fs.readFileSync(path, "utf8");
       });
+      const geometries = model["minecraft:geometry"];
+      const modern = Array.isArray(geometries);
+      // Match the native Bedrock loader's display-transform detection. Calling
+      // parse directly skips load(), so we must choose the correct format first.
+      const formatId = modern && geometries[0]?.item_display_transforms
+        ? "bedrock_block" : "bedrock";
+      const format = Formats[formatId];
+      const codec = modern ? Codecs.bedrock : Codecs.bedrock_old;
+      if (!format) throw new Error(`This Blockbench version does not support the ${formatId} format.`);
+      if (!codec?.parse) throw new Error("This Blockbench version does not support this geometry format.");
       const original = Project;
-      if (!newProject(Formats.bedrock)) throw new Error("Unable to create a Bedrock import project.");
+      if (!newProject(format)) throw new Error("Unable to create a Bedrock import project.");
       const imported = Project;
       try {
-        const codec = Array.isArray(model["minecraft:geometry"]) ? Codecs.bedrock : Codecs.bedrock_old;
-        if (!codec) throw new Error("This Blockbench version does not support this geometry format.");
-        codec.parse!(model, "");
+        if (modern) {
+          // Native parsing otherwise closes the new project and selects a tab
+          // with the same identifier/path, violating this tool's isolation.
+          const parse = codec.parse as (model: unknown, path: string, options: { switch_to_existing_tab: boolean }) => void;
+          parse.call(codec, model, "", { switch_to_existing_tab: false });
+        } else {
+          codec.parse(model, "");
+        }
         Canvas.updateAll();
         return captureScreenshot();
       } catch (error) {

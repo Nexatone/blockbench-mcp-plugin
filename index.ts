@@ -14,12 +14,14 @@ import { settingsSetup, settingsTeardown } from "@/ui/settings";
 import { setupI18n } from "@/ui/i18n";
 import { sessionManager } from "@/lib/sessions";
 import { initPromptLoader } from "@/lib/promptLoader";
+import { setupBedrockDisplayPersistence } from "@/lib/bedrockDisplay";
 import type { NetServer, SessionTransports } from "@/server/net";
 import createNetServer from "@/server/net";
 import { getIcon } from "@/macros/getIcon" with { type: "macro" };
 
 let httpServer: NetServer | null = null;
 let sessionTransports: SessionTransports | null = null;
+let teardownBedrockDisplay: (() => void) | null = null;
 
 BBPlugin.register("mcp", {
   version: VERSION,
@@ -52,6 +54,7 @@ BBPlugin.register("mcp", {
     setupI18n();
 
     settingsSetup();
+    teardownBedrockDisplay = setupBedrockDisplayPersistence();
 
     // Load prompt manifest from CDN/cache before server starts.
     // Must never abort onload — missing prompts should degrade gracefully,
@@ -99,6 +102,8 @@ BBPlugin.register("mcp", {
   },
 
   onunload() {
+    teardownBedrockDisplay?.();
+    teardownBedrockDisplay = null;
     // Close HTTP server
     if (httpServer) {
       httpServer.closeAllConnections();

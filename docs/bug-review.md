@@ -1,5 +1,10 @@
 # Repository bug review — 2026-09-02
 
+Follow-up: [project-free evaluation and Bedrock display round trips](project-roundtrip.md)
+documents fixes for implicit Undo, Block/Entity import selection, same-identifier
+tab reuse and the saved GUI `fit_to_frame` flag, with a dedicated live regression
+script. These fixes are tracked separately from the original repository review.
+
 Reviewed commit `6b069e308fdfc9b0a1c15bc924ca78150815f143` plus the original
 texture-dimensions fix. The branch is now `codex-bug-review`; the former
 `codex/texture-dimensions` name was removed by renaming the branch. The changes
