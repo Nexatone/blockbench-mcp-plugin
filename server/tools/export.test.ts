@@ -22,6 +22,13 @@ test("exports synchronous text and awaited text/binary codecs with correct byte 
     const binary = JSON.parse(await exportModel.execute({ codec_id: "binary" }) as string);
     expect(binary.encoding).toBe("base64"); expect(binary.byte_length).toBe(2);
     expect([...Buffer.from(binary.content, "base64")]).toEqual([1, 2]);
+    for (const length of [0,1,2,3,4]) {
+      const limited = JSON.parse(await exportModel.execute({codec_id:"binary",max_content_length:length}) as string);
+      expect(limited.content).toBe(length===0?null:"AQI=".slice(0,length));
+      expect(limited.truncated).toBe(length<4);
+    }
+    (globals.Codecs as Record<string,unknown>).switch = {compile:async()=>{globals.Project={name:"changed"};return "wrong project";}};
+    await expect(exportModel.execute({codec_id:"switch"})).rejects.toThrow("PROJECT_CHANGED");
     await expect(exportModel.execute({ codec_id: "failure" })).rejects.toThrow("codec failed");
   } finally { Object.assign(globals, prior); }
 });

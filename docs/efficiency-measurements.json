@@ -1,0 +1,791 @@
+{
+  "sourceCommit": "056eca5e120d48064302d881e0f016001927e97f",
+  "date": "2026-09-03T03:36:15.283Z",
+  "counts": {
+    "documentedTools": 106,
+    "documentedResources": 16,
+    "documentedPrompts": 6,
+    "activeTools": 94,
+    "activeTemplates": 4,
+    "listedResourceInstances": 668
+  },
+  "toolMetadata": {
+    "outputSchemas": 0,
+    "idempotentAnnotations": 1,
+    "openWorldFalse": 0,
+    "readOnlyTrue": 21,
+    "catalogueBytes": 89239,
+    "estimatedTokensAt4BytesPerToken": 22310
+  },
+  "stats": [
+    {
+      "name": "initialize",
+      "n": 2,
+      "medianMs": 22.3044,
+      "p95Ms": 25.6689,
+      "minBytes": 233,
+      "maxBytes": 233
+    },
+    {
+      "name": "notifications/initialized",
+      "n": 2,
+      "medianMs": 3.4631,
+      "p95Ms": 3.6178,
+      "minBytes": 0,
+      "maxBytes": 0
+    },
+    {
+      "name": "tools/list",
+      "n": 13,
+      "medianMs": 8.1152,
+      "p95Ms": 16.5585,
+      "minBytes": 89273,
+      "maxBytes": 89274
+    },
+    {
+      "name": "resources/list",
+      "n": 4,
+      "medianMs": 1289.0192,
+      "p95Ms": 1308.7283,
+      "minBytes": 134356,
+      "maxBytes": 134357
+    },
+    {
+      "name": "resources/templates/list",
+      "n": 1,
+      "medianMs": 7.7386,
+      "p95Ms": 7.7386,
+      "minBytes": 1409,
+      "maxBytes": 1409
+    },
+    {
+      "name": "prompts/list",
+      "n": 1,
+      "medianMs": 1.6146,
+      "p95Ms": 1.6146,
+      "minBytes": 1403,
+      "maxBytes": 1403
+    },
+    {
+      "name": "tools/call:risky_eval",
+      "n": 33,
+      "medianMs": 3.1945,
+      "p95Ms": 636.8122,
+      "minBytes": 75,
+      "maxBytes": 1695
+    },
+    {
+      "name": "ping",
+      "n": 12,
+      "medianMs": 0.6558,
+      "p95Ms": 4.9323,
+      "minBytes": 36,
+      "maxBytes": 37
+    },
+    {
+      "name": "tools/call:get_project_info",
+      "n": 12,
+      "medianMs": 1.4259,
+      "p95Ms": 5.8216,
+      "minBytes": 685,
+      "maxBytes": 686
+    },
+    {
+      "name": "resources/read:projects://",
+      "n": 1,
+      "medianMs": 4.3873,
+      "p95Ms": 4.3873,
+      "minBytes": 8469,
+      "maxBytes": 8469
+    },
+    {
+      "name": "resources/read:textures://",
+      "n": 1,
+      "medianMs": 0.8731,
+      "p95Ms": 0.8731,
+      "minBytes": 21100,
+      "maxBytes": 21100
+    },
+    {
+      "name": "resources/read:nodes://<redacted-node-id>",
+      "n": 1,
+      "medianMs": 486.4825,
+      "p95Ms": 486.4825,
+      "minBytes": 17759807,
+      "maxBytes": 17759807
+    },
+    {
+      "name": "prompts/get:blockbench_native_apis",
+      "n": 1,
+      "medianMs": 73.9022,
+      "p95Ms": 73.9022,
+      "minBytes": 7961,
+      "maxBytes": 7961
+    },
+    {
+      "name": "prompts/get:blockbench_code_eval_safety",
+      "n": 1,
+      "medianMs": 9.2134,
+      "p95Ms": 9.2134,
+      "minBytes": 6912,
+      "maxBytes": 6912
+    },
+    {
+      "name": "prompts/get:model_creation_strategy",
+      "n": 1,
+      "medianMs": 0.7529,
+      "p95Ms": 0.7529,
+      "minBytes": 101,
+      "maxBytes": 101
+    },
+    {
+      "name": "tools/call:list_outline",
+      "n": 2,
+      "medianMs": 5.684,
+      "p95Ms": 7.8965,
+      "minBytes": 333,
+      "maxBytes": 99644
+    },
+    {
+      "name": "tools/call:find_elements_by_criteria",
+      "n": 2,
+      "medianMs": 3.829,
+      "p95Ms": 6.5558,
+      "minBytes": 305,
+      "maxBytes": 1781
+    },
+    {
+      "name": "tools/call:list_textures",
+      "n": 1,
+      "medianMs": 0.518,
+      "p95Ms": 0.518,
+      "minBytes": 186,
+      "maxBytes": 186
+    },
+    {
+      "name": "tools/call:get_selection",
+      "n": 1,
+      "medianMs": 0.5815,
+      "p95Ms": 0.5815,
+      "minBytes": 402,
+      "maxBytes": 402
+    },
+    {
+      "name": "tools/call:get_undo_stack",
+      "n": 1,
+      "medianMs": 0.6155,
+      "p95Ms": 0.6155,
+      "minBytes": 1285,
+      "maxBytes": 1285
+    },
+    {
+      "name": "tools/call:list_export_formats",
+      "n": 1,
+      "medianMs": 0.6638,
+      "p95Ms": 0.6638,
+      "minBytes": 4295,
+      "maxBytes": 4295
+    },
+    {
+      "name": "tools/call:capture_screenshot",
+      "n": 1,
+      "medianMs": 24.0815,
+      "p95Ms": 24.0815,
+      "minBytes": 205218,
+      "maxBytes": 205218
+    },
+    {
+      "name": "tools/call:capture_app_screenshot",
+      "n": 1,
+      "medianMs": 116.6608,
+      "p95Ms": 116.6608,
+      "minBytes": 233542,
+      "maxBytes": 233542
+    },
+    {
+      "name": "resources/read:validator://status",
+      "n": 1,
+      "medianMs": 7.3364,
+      "p95Ms": 7.3364,
+      "minBytes": 503,
+      "maxBytes": 503
+    },
+    {
+      "name": "resources/read:validator://checks",
+      "n": 1,
+      "medianMs": 0.7744,
+      "p95Ms": 0.7744,
+      "minBytes": 2264,
+      "maxBytes": 2264
+    },
+    {
+      "name": "resources/read:validator://warnings",
+      "n": 1,
+      "medianMs": 0.5966,
+      "p95Ms": 0.5966,
+      "minBytes": 216,
+      "maxBytes": 216
+    },
+    {
+      "name": "resources/read:validator://errors",
+      "n": 1,
+      "medianMs": 0.4876,
+      "p95Ms": 0.4876,
+      "minBytes": 210,
+      "maxBytes": 210
+    },
+    {
+      "name": "tools/call:create_project",
+      "n": 7,
+      "medianMs": 34.9572,
+      "p95Ms": 65.3094,
+      "minBytes": 192,
+      "maxBytes": 196
+    },
+    {
+      "name": "tools/call:place_cube",
+      "n": 78,
+      "medianMs": 8.8448,
+      "p95Ms": 19.4604,
+      "minBytes": 148,
+      "maxBytes": 1916
+    },
+    {
+      "name": "tools/call:undo",
+      "n": 3,
+      "medianMs": 4.2079,
+      "p95Ms": 10.5324,
+      "minBytes": 194,
+      "maxBytes": 195
+    },
+    {
+      "name": "tools/call:redo",
+      "n": 3,
+      "medianMs": 19.8247,
+      "p95Ms": 22.6155,
+      "minBytes": 194,
+      "maxBytes": 195
+    },
+    {
+      "name": "tools/call:create_texture",
+      "n": 1,
+      "medianMs": 5.0629,
+      "p95Ms": 5.0629,
+      "minBytes": 251,
+      "maxBytes": 251
+    },
+    {
+      "name": "tools/call:place_mesh",
+      "n": 1,
+      "medianMs": 11.2367,
+      "p95Ms": 11.2367,
+      "minBytes": 147,
+      "maxBytes": 147
+    },
+    {
+      "name": "tools/call:select_mesh_elements",
+      "n": 1,
+      "medianMs": 14.5866,
+      "p95Ms": 14.5866,
+      "minBytes": 174,
+      "maxBytes": 174
+    },
+    {
+      "name": "tools/call:add_armature",
+      "n": 1,
+      "medianMs": 3.7548,
+      "p95Ms": 3.7548,
+      "minBytes": 474,
+      "maxBytes": 474
+    },
+    {
+      "name": "tools/call:add_armature_bone",
+      "n": 2,
+      "medianMs": 12.4529,
+      "p95Ms": 12.5002,
+      "minBytes": 738,
+      "maxBytes": 738
+    },
+    {
+      "name": "tools/call:select_armature_bones",
+      "n": 2,
+      "medianMs": 7.744,
+      "p95Ms": 14.1015,
+      "minBytes": 127,
+      "maxBytes": 343
+    }
+  ],
+  "nodeFieldBytes": [
+    {
+      "key": "children",
+      "bytes": 16368794
+    },
+    {
+      "key": "parent",
+      "bytes": 1129056
+    },
+    {
+      "key": "matrix",
+      "bytes": 46
+    },
+    {
+      "key": "matrixWorld",
+      "bytes": 46
+    },
+    {
+      "key": "uuid",
+      "bytes": 38
+    },
+    {
+      "key": "name",
+      "bytes": 38
+    },
+    {
+      "key": "fix_rotation",
+      "bytes": 37
+    },
+    {
+      "key": "quaternion",
+      "bytes": 29
+    }
+  ],
+  "promptSizes": [
+    {
+      "name": "blockbench_native_apis",
+      "textBytes": 7586
+    },
+    {
+      "name": "blockbench_code_eval_safety",
+      "textBytes": 6580
+    },
+    {
+      "name": "model_creation_strategy",
+      "textBytes": 0
+    }
+  ],
+  "largestTools": [
+    {
+      "name": "batch_keyframe_operations",
+      "bytes": 2444
+    },
+    {
+      "name": "animation_graph_editor",
+      "bytes": 2273
+    },
+    {
+      "name": "manage_keyframes",
+      "bytes": 2260
+    },
+    {
+      "name": "place_cube",
+      "bytes": 2098
+    },
+    {
+      "name": "paint_settings",
+      "bytes": 2010
+    },
+    {
+      "name": "modify_cube",
+      "bytes": 1782
+    },
+    {
+      "name": "animation_copy_paste",
+      "bytes": 1730
+    },
+    {
+      "name": "paint_with_brush",
+      "bytes": 1695
+    },
+    {
+      "name": "paint_fill_tool",
+      "bytes": 1690
+    },
+    {
+      "name": "create_texture",
+      "bytes": 1629
+    },
+    {
+      "name": "find_elements_by_criteria",
+      "bytes": 1593
+    },
+    {
+      "name": "texture_selection",
+      "bytes": 1573
+    }
+  ],
+  "categories": [
+    {
+      "category": "Cubes",
+      "tools": 2,
+      "liveBytes": 3880
+    },
+    {
+      "category": "Camera & Screenshots",
+      "tools": 3,
+      "liveBytes": 1836
+    },
+    {
+      "category": "Animation",
+      "tools": 7,
+      "liveBytes": 12732
+    },
+    {
+      "category": "Armature",
+      "tools": 16,
+      "liveBytes": 10513
+    },
+    {
+      "category": "Elements",
+      "tools": 9,
+      "liveBytes": 7239
+    },
+    {
+      "category": "Export",
+      "tools": 2,
+      "liveBytes": 2066
+    },
+    {
+      "category": "History",
+      "tools": 4,
+      "liveBytes": 2404
+    },
+    {
+      "category": "Import/Export",
+      "tools": 1,
+      "liveBytes": 827
+    },
+    {
+      "category": "Material Instances",
+      "tools": 5,
+      "liveBytes": 4210
+    },
+    {
+      "category": "Mesh Editing",
+      "tools": 11,
+      "liveBytes": 10039
+    },
+    {
+      "category": "Paint Tools",
+      "tools": 12,
+      "liveBytes": 16263
+    },
+    {
+      "category": "Project",
+      "tools": 2,
+      "liveBytes": 1094
+    },
+    {
+      "category": "Textures",
+      "tools": 13,
+      "liveBytes": 10440
+    },
+    {
+      "category": "UI Interaction",
+      "tools": 4,
+      "liveBytes": 3366
+    },
+    {
+      "category": "UV Mapping",
+      "tools": 3,
+      "liveBytes": 2225
+    },
+    {
+      "category": "Hytale Integration",
+      "tools": 12,
+      "liveBytes": 0
+    }
+  ],
+  "batchTrials": [
+    {
+      "trial": 0,
+      "batch": false,
+      "duration": 204.0618999999997,
+      "bytes": 3715,
+      "calls": 25,
+      "state": {
+        "cubes": 25,
+        "undo": 25,
+        "pending": false
+      }
+    },
+    {
+      "trial": 0,
+      "batch": true,
+      "duration": 23.062199999999393,
+      "bytes": 1915,
+      "calls": 1,
+      "state": {
+        "cubes": 25,
+        "undo": 1,
+        "pending": false
+      }
+    },
+    {
+      "trial": 1,
+      "batch": false,
+      "duration": 183.14960000000065,
+      "bytes": 3715,
+      "calls": 25,
+      "state": {
+        "cubes": 25,
+        "undo": 25,
+        "pending": false
+      }
+    },
+    {
+      "trial": 1,
+      "batch": true,
+      "duration": 23.009000000000015,
+      "bytes": 1915,
+      "calls": 1,
+      "state": {
+        "cubes": 25,
+        "undo": 1,
+        "pending": false
+      }
+    },
+    {
+      "trial": 2,
+      "batch": false,
+      "duration": 188.58090000000084,
+      "bytes": 3739,
+      "calls": 25,
+      "state": {
+        "cubes": 25,
+        "undo": 25,
+        "pending": false
+      }
+    },
+    {
+      "trial": 2,
+      "batch": true,
+      "duration": 22.263100000000122,
+      "bytes": 1916,
+      "calls": 1,
+      "state": {
+        "cubes": 25,
+        "undo": 1,
+        "pending": false
+      }
+    }
+  ],
+  "preservation": {
+    "count": 19,
+    "checks": [
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      },
+      {
+        "model": true,
+        "saved": true,
+        "index": true,
+        "history": true,
+        "selection": true
+      }
+    ],
+    "active": true
+  },
+  "productionBundle": {
+    "bytes": 626969,
+    "sha256": "43dd3bff743df6c10dc5cfc04eff3e1846c09ccfdfd3f38f75e9cec2d14d4352"
+  },
+  "baseline": {
+    "tests": 60,
+    "assertions": 372,
+    "typecheckDiagnostics": 72,
+    "build": "pass",
+    "docs": "pass"
+  },
+  "scope": {
+    "pluginVersion": "1.1.0",
+    "blockbenchVersion": "5.1.6",
+    "endpoint": "loopback HTTP",
+    "loadedBuildHashVerified": false,
+    "originalProjectCount": 19,
+    "activeElements": 633,
+    "activeRenderNodes": 634,
+    "optionalPluginsTested": false,
+    "units": "bytes are UTF-8 JSON-RPC response bytes except catalogueBytes; timings are local wall-clock milliseconds, excluding LLM inference"
+  },
+  "limitations": [
+    "Small local samples; not production latency distributions.",
+    "Mixed calls grouped by name are not suitable for operation-specific comparisons (notably risky_eval, list_outline and place_cube).",
+    "Catalogue token estimate is bytes/4, not a tokenizer or host-context measurement.",
+    "Images are not tokenized like base64 text.",
+    "Live plugin identity/version known; exact cached binary hash not verified.",
+    "All tool implementations reviewed; only explicitly described scenarios tested live.",
+    "Raw project contents and object identifiers excluded."
+  ],
+  "outlineCases": [
+    {
+      "arguments": {},
+      "ms": 3.471599999999995,
+      "bytes": 99644
+    },
+    {
+      "arguments": {
+        "include_cubes": false,
+        "include_meshes": false,
+        "max_depth": 2
+      },
+      "ms": 7.896500000000003,
+      "bytes": 333
+    }
+  ],
+  "targetedChecks": {
+    "invalidRegex": {
+      "pattern": "[",
+      "returnedSuccess": true,
+      "ignoredNameFilter": true
+    },
+    "armatureSelection": {
+      "requestedCount": 2,
+      "reportedCount": 2,
+      "actualCount": 1,
+      "invalidIdReturnsError": true,
+      "invalidIdClearedSelection": true
+    },
+    "meshCreation": {
+      "vertices": 3,
+      "faces": 0
+    },
+    "meshSelection": {
+      "createdModelUndoEntry": true
+    },
+    "batchUndoRedo": {
+      "trials": 3,
+      "cubesAfterUndo": 0,
+      "cubesAfterRedo": 25
+    },
+    "nativeHttpModule": {
+      "noPermissionDialogProbe": true,
+      "supported": false
+    },
+    "defaultStrategyPrompt": {
+      "textBytes": 0
+    }
+  }
+}

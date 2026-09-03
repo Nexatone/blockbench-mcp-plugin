@@ -2,7 +2,7 @@
 /// <reference types="blockbench-types" />
 
 import { createResource } from "@/lib/factories";
-import { findByResourceId, makeResourceId } from "@/lib/resourceUri";
+import { findByResourceId, createResourceIdBuilder } from "@/lib/resourceUri";
 import {
   isHytalePluginInstalled,
   isHytaleFormat,
@@ -114,6 +114,7 @@ export function registerHytaleResources() {
 
   createResource("hytale-attachments", {
     uriTemplate: "hytale://attachments/{id}",
+    collectionUri: "hytale://attachments",
     title: "Hytale Attachments",
     description:
       "Returns information about attachment collections in the current Hytale project. Attachments are separate models that can be attached to bones. List URIs use the slugified collection name (e.g. `hytale://attachments/helmet`) when unique, with a `~<uuid-prefix>` suffix on collision. Reads also accept the raw UUID or exact name.",
@@ -123,9 +124,10 @@ export function registerHytaleResources() {
       }
 
       const attachments = getAttachmentCollections();
+      const idFor = createResourceIdBuilder(attachments);
       return {
         resources: attachments.map((a) => ({
-          uri: `hytale://attachments/${makeResourceId(a, attachments)}`,
+          uri: `hytale://attachments/${idFor(a)}`,
           name: a.name,
           description: `Attachment collection${a.texture ? " with texture" : ""}`,
           mimeType: "application/json",
@@ -202,6 +204,7 @@ export function registerHytaleResources() {
 
   createResource("hytale-pieces", {
     uriTemplate: "hytale://pieces/{id}",
+    collectionUri: "hytale://pieces",
     title: "Hytale Attachment Pieces",
     description:
       "Returns information about groups marked as attachment pieces. Attachment pieces connect to like-named bones in the main model. List URIs use the slugified bone name (e.g. `hytale://pieces/hand-right`) when unique, with a `~<uuid-prefix>` suffix on collision. Reads also accept the raw UUID or exact name.",
@@ -211,9 +214,10 @@ export function registerHytaleResources() {
       }
 
       const pieces = getAttachmentPieces();
+      const idFor = createResourceIdBuilder(pieces);
       return {
         resources: pieces.map((p) => ({
-          uri: `hytale://pieces/${makeResourceId(p, pieces)}`,
+          uri: `hytale://pieces/${idFor(p)}`,
           name: p.name,
           description: "Attachment piece bone",
           mimeType: "application/json",
@@ -289,6 +293,7 @@ export function registerHytaleResources() {
 
   createResource("hytale-cubes", {
     uriTemplate: "hytale://cubes/{id}",
+    collectionUri: "hytale://cubes",
     title: "Hytale Cubes",
     description:
       "Returns information about cubes with Hytale-specific properties (shading_mode, double_sided, stretch). List URIs use the slugified cube name (e.g. `hytale://cubes/torso`) when unique, with a `~<uuid-prefix>` suffix on collision. Reads also accept the raw UUID or exact name.",
@@ -299,9 +304,10 @@ export function registerHytaleResources() {
 
       // @ts-ignore - Cube is globally available
       const cubes: Cube[] = Cube.all ?? [];
+      const idFor = createResourceIdBuilder(cubes);
       return {
         resources: cubes.map((c: Cube) => ({
-          uri: `hytale://cubes/${makeResourceId(c, cubes)}`,
+          uri: `hytale://cubes/${idFor(c)}`,
           name: c.name,
           description: `Shading: ${getCubeShadingMode(c)}, Double-sided: ${isCubeDoubleSided(c)}`,
           mimeType: "application/json",

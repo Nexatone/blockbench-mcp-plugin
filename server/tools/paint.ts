@@ -1,6 +1,8 @@
 import { editTextureSelection, strokePoints } from "@/lib/textureSelection";
 import { validatePaintPoints, nativePaintStroke, blendPaintPixel, editPaintPixels } from "@/lib/paintOperations";
 import { colorFillMask } from "@/lib/fillMask";
+import { withUndoEdit } from "@/lib/editorExecution";
+import { resolveUnique } from "@/lib/modelState";
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { z } from "zod";
@@ -274,6 +276,7 @@ export const textureLayerManagementParameters = z.object({
     .describe("Layer management action."),
   texture_id: textureIdOptionalSchema,
   layer_name: z.string().optional().describe("Name of the layer."),
+  layer_id: z.string().optional().describe("Exact layer UUID or unique name on the requested texture; defaults to its selected layer. Inspect IDs with query_model kind texture_layers."),
   opacity: z
     .number()
     .min(0)
@@ -324,7 +327,9 @@ export const paintToolDocs: ToolSpec[] = [
       "Picks colors from textures and sets them as the active color.",
     annotations: {
       title: "Color Picker Tool",
-      readOnlyHint: true,
+      readOnlyHint: false,
+      destructiveHint: false,
+      openWorldHint: false,
     },
     parameters: colorPickerToolParameters,
     status: STATUS_STABLE,
@@ -794,9 +799,9 @@ export function registerPaintTools() {
         const blendMode = brush_settings?.blend_mode ?? "default";
         const paintState = Painter as unknown as { current: Record<string, any> };
         const previousPaint = paintState.current;
-        Undo.initEdit({ textures: [texture], bitmap: true });
         try {
           paintState.current = {};
+          withUndoEdit("Paint with brush", { textures: [texture], bitmap: true }, () => {
           texture.edit((canvas: HTMLCanvasElement) => {
             const ctx = canvas.getContext("2d")!;
             for (const point of points) {
@@ -811,10 +816,7 @@ export function registerPaintTools() {
               else Painter.editSquare(ctx, point.x - offset[0], point.y - offset[1], size, softness, blend);
             }
           }, { no_undo: true });
-          Undo.finishEdit("Paint with brush");
-        } catch (error) {
-          Undo.cancelEdit();
-          throw error;
+          });
         } finally { paintState.current = previousPaint; }
         Canvas.updateAll();
 
@@ -911,24 +913,29 @@ export function registerPaintTools() {
         action,
         texture_id,
         layer_name,
+        layer_id,
         opacity,
         blend_mode,
         target_index,
       }) {
-        const texture = getAndActivateTexture(texture_id);
+        const texture = texture_id ? getProjectTexture(texture_id) : Texture.selected ?? Texture.getDefault();
+        if (!texture) throw new Error("Texture not found. Use list_textures or create_texture first.");
+        const selectedLayer = layer_id ? resolveUnique(texture.layers, layer_id, "layer") : texture.selected_layer;
 
-        if (!["create_layer", "flatten_layers"].includes(action) && !TextureLayer.selected) throw new Error("No layer selected on the requested texture.");
+        if (!["create_layer", "flatten_layers"].includes(action) && !selectedLayer) throw new Error("No layer selected on the requested texture.");
         if (action === "set_opacity" && opacity === undefined) throw new Error("Opacity value required.");
         if (action === "set_blend_mode" && !blend_mode) throw new Error("Blend mode required.");
         if (action === "rename_layer" && !layer_name) throw new Error("New layer name required.");
         if (action === "move_layer" && (target_index === undefined || target_index < 0 || target_index >= texture.layers.length)) throw new Error("Target layer index is out of range.");
         if (action === "flatten_layers" && !texture.layers_enabled) throw new Error("Texture has no layers to flatten.");
-        if (action === "merge_down" && texture.layers.indexOf(TextureLayer.selected) <= 0) throw new Error("No layer below the selected layer to merge into.");
+        if (action === "merge_down" && texture.layers.indexOf(selectedLayer!) <= 0) throw new Error("No layer below the selected layer to merge into.");
 
-        Undo.initEdit({
+        texture.select();
+        selectedLayer?.select();
+        const result = withUndoEdit(`Layer management: ${action}`, {
           textures: [texture],
           bitmap: true,
-        });
+        }, () => {
 
         let result = "";
 
@@ -1040,7 +1047,8 @@ export function registerPaintTools() {
 
         texture.updateLayerChanges(true);
         texture.updateChangesAfterEdit();
-        Undo.finishEdit(`Layer management: ${action}`);
+        return result;
+        });
         updateInterfacePanels();
 
         return result;

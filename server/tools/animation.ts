@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { findGroupOrThrow } from "@/lib/util";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { withUndoEdit } from "@/lib/editorExecution";
 import {
   vector3Schema,
   animationIdOptionalSchema,
@@ -940,8 +941,7 @@ createTool(
         } finally { Timeline.time = previousTime; }
         if (!bakeSamples.length) throw new Error("Baking requires at least two selected keys in a transform channel.");
       }
-      Undo.initEdit({ animations: [Animation.selected] });
-      try {
+      withUndoEdit(`Batch keyframe operation: ${operation}`, { animations: [Animation.selected] }, () => {
       switch (operation) {
         case "offset":
           keyframes.forEach((kf) => {
@@ -1006,9 +1006,8 @@ createTool(
           }
           break;     }
 
-      Animation.selected.setLength();
-      Undo.finishEdit(`Batch keyframe operation: ${operation}`);
-      } catch (error) { Undo.cancelEdit(); throw error; }
+      Animation.selected!.setLength();
+      });
       updateKeyframeSelection();
       Animator.preview();
 

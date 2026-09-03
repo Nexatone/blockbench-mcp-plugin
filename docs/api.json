@@ -1,6 +1,6 @@
 {
-  "version": "1.1.0",
-  "generatedAt": "2026-09-03T03:15:23.142Z",
+  "version": "1.2.0",
+  "generatedAt": "2026-09-03T04:51:49.975Z",
   "tools": [
     {
       "name": "place_cube",
@@ -2460,8 +2460,8 @@
               "only_current_format": {
                 "type": "boolean",
                 "default": false,
-                "description": "If true, only return codecs compatible with the current project's format.",
-                "markdownDescription": "If true, only return codecs compatible with the current project's format."
+                "description": "If true, return only the current format's own codec. Other compile-capable codecs may also export this model; false lists all codecs.",
+                "markdownDescription": "If true, return only the current format's own codec. Other compile-capable codecs may also export this model; false lists all codecs."
               }
             },
             "additionalProperties": false
@@ -2654,6 +2654,12 @@
           "from_geo_json": {
             "type": "object",
             "properties": {
+              "include_preview": {
+                "type": "boolean",
+                "default": true,
+                "description": "Return the existing screenshot by default; false returns only created project metadata.",
+                "markdownDescription": "Return the existing screenshot by default; false returns only created project metadata."
+              },
               "geojson": {
                 "type": "string",
                 "description": "Path to the GeoJSON file or data URL, or the GeoJSON string itself.",
@@ -2662,6 +2668,101 @@
             },
             "required": [
               "geojson"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "$ref": "#/definitions/from_geo_json_result",
+        "definitions": {
+          "from_geo_json_result": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "string"
+              },
+              "format": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "project_uuid",
+              "revision",
+              "format",
+              "name"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "open_project",
+      "title": "Open Project",
+      "description": "Opens native .bbmodel data in a NEW isolated project, preserving existing tabs. Requires its model format to be installed. Returns project identity/revision; preview is opt-in. Use select_project to switch existing tabs and export_model with codec_id 'project' to save.",
+      "status": "stable",
+      "category": "Import/Export",
+      "annotations": {
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/open_project",
+        "definitions": {
+          "open_project": {
+            "type": "object",
+            "properties": {
+              "bbmodel": {
+                "type": "string",
+                "description": "Native .bbmodel JSON, local path/file URL, application/json data URL or HTTP(S) URL; maximum 16 MiB.",
+                "markdownDescription": "Native .bbmodel JSON, local path/file URL, application/json data URL or HTTP(S) URL; maximum 16 MiB."
+              },
+              "include_preview": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "required": [
+              "bbmodel"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "$ref": "#/definitions/open_project_result",
+        "definitions": {
+          "open_project_result": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "string"
+              },
+              "format": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "project_uuid",
+              "revision",
+              "format",
+              "name"
             ],
             "additionalProperties": false
           }
@@ -3939,7 +4040,9 @@
       "status": "stable",
       "category": "Paint Tools",
       "annotations": {
-        "readOnlyHint": true
+        "destructiveHint": false,
+        "readOnlyHint": false,
+        "openWorldHint": false
       },
       "parameters": {
         "$ref": "#/definitions/color_picker_tool",
@@ -4686,6 +4789,11 @@
                 "description": "Name of the layer.",
                 "markdownDescription": "Name of the layer."
               },
+              "layer_id": {
+                "type": "string",
+                "description": "Exact layer UUID or unique name on the requested texture; defaults to its selected layer. Inspect IDs with query_model kind texture_layers.",
+                "markdownDescription": "Exact layer UUID or unique name on the requested texture; defaults to its selected layer. Inspect IDs with query_model kind texture_layers."
+              },
               "opacity": {
                 "type": "number",
                 "minimum": 0,
@@ -4802,6 +4910,12 @@
               "name": {
                 "type": "string"
               },
+              "include_preview": {
+                "type": "boolean",
+                "default": true,
+                "description": "Return the existing texture image by default; false returns only metadata and UUIDs.",
+                "markdownDescription": "Return the existing texture image by default; false returns only metadata and UUIDs."
+              },
               "width": {
                 "type": "integer",
                 "minimum": 16,
@@ -4896,6 +5010,47 @@
             },
             "required": [
               "name"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "$ref": "#/definitions/create_texture_result",
+        "definitions": {
+          "create_texture_result": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "string"
+              },
+              "texture_uuid": {
+                "type": "string"
+              },
+              "width": {
+                "type": "number"
+              },
+              "height": {
+                "type": "number"
+              },
+              "layer_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "project_uuid",
+              "revision",
+              "texture_uuid",
+              "width",
+              "height",
+              "layer_ids"
             ],
             "additionalProperties": false
           }
@@ -5370,7 +5525,8 @@
       "status": "stable",
       "category": "Textures",
       "annotations": {
-        "destructiveHint": false
+        "destructiveHint": false,
+        "idempotentHint": true
       },
       "parameters": {
         "$ref": "#/definitions/activate_texture",
@@ -6166,27 +6322,951 @@
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
       }
+    },
+    {
+      "name": "get_project_capabilities",
+      "title": "get_project_capabilities",
+      "description": "Returns native format capabilities, available formats, project revision and exact plugin build identity. Use before choosing geometry/animation tools.",
+      "status": "stable",
+      "category": "Model Workflows",
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "$ref": "#/definitions/get_project_capabilities",
+        "definitions": {
+          "get_project_capabilities": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string",
+                "maxLength": 128,
+                "description": "Project UUID; defaults to the active project for reads.",
+                "markdownDescription": "Project UUID; defaults to the active project for reads."
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "$ref": "#/definitions/get_project_capabilities_result",
+        "definitions": {
+          "get_project_capabilities_result": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "string"
+              },
+              "plugin": {
+                "type": "object",
+                "additionalProperties": {}
+              },
+              "format": {
+                "type": "object",
+                "additionalProperties": {}
+              },
+              "formats": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            },
+            "required": [
+              "project_uuid",
+              "revision",
+              "plugin",
+              "format",
+              "formats"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "query_model",
+      "title": "query_model",
+      "description": "Reads compact pages of project elements, textures, animations, mesh vertices/faces or texture layers. No bitmap/render graphs. Pages have a 16 KiB item budget; reuse next_cursor with identical filters. Editing invalidates cursors.",
+      "status": "stable",
+      "category": "Model Workflows",
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "$ref": "#/definitions/query_model",
+        "definitions": {
+          "query_model": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string",
+                "maxLength": 128,
+                "description": "Project UUID; defaults to the active project for reads.",
+                "markdownDescription": "Project UUID; defaults to the active project for reads."
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "elements",
+                  "textures",
+                  "animations",
+                  "mesh_vertices",
+                  "mesh_faces",
+                  "texture_layers"
+                ],
+                "default": "elements"
+              },
+              "owner_id": {
+                "type": "string",
+                "maxLength": 128,
+                "description": "Mesh or texture UUID/unique name for components or layers.",
+                "markdownDescription": "Mesh or texture UUID/unique name for components or layers."
+              },
+              "type": {
+                "type": "string",
+                "maxLength": 64,
+                "description": "Exact element type, e.g. cube, group, mesh, armature_bone.",
+                "markdownDescription": "Exact element type, e.g. cube, group, mesh, armature_bone."
+              },
+              "name_contains": {
+                "type": "string",
+                "maxLength": 256,
+                "description": "Literal case-insensitive name filter; no regex.",
+                "markdownDescription": "Literal case-insensitive name filter; no regex."
+              },
+              "parent_uuid": {
+                "type": "string",
+                "maxLength": 128,
+                "description": "Direct parent UUID, or root.",
+                "markdownDescription": "Direct parent UUID, or root."
+              },
+              "include_transform": {
+                "type": "boolean",
+                "default": false
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 25
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 4096
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "$ref": "#/definitions/query_model_result",
+        "definitions": {
+          "query_model_result": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "string"
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              },
+              "total": {
+                "type": "number"
+              },
+              "next_cursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "project_uuid",
+              "revision",
+              "items",
+              "total",
+              "next_cursor"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "get_element",
+      "title": "get_element",
+      "description": "Reads one element's identity, transform, counts and bounded child IDs. Use query_model for full mesh geometry or additional children; avoids raw nodes:// rendering graphs.",
+      "status": "stable",
+      "category": "Model Workflows",
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "$ref": "#/definitions/get_element",
+        "definitions": {
+          "get_element": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string",
+                "maxLength": 128,
+                "description": "Project UUID; defaults to the active project for reads.",
+                "markdownDescription": "Project UUID; defaults to the active project for reads."
+              },
+              "id": {
+                "type": "string",
+                "maxLength": 256
+              },
+              "child_limit": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100,
+                "default": 20
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "$ref": "#/definitions/get_element_result",
+        "definitions": {
+          "get_element_result": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "string"
+              },
+              "element": {
+                "type": "object",
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "project_uuid",
+              "revision",
+              "element"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "validate_model",
+      "title": "validate_model",
+      "description": "Runs native validation for the active project, waits for completion and returns a bounded problem page with check IDs. A cursor reads the completed validation snapshot; model edits invalidate it.",
+      "status": "stable",
+      "category": "Model Workflows",
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "$ref": "#/definitions/validate_model",
+        "definitions": {
+          "validate_model": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string"
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "all",
+                  "error",
+                  "warning"
+                ],
+                "default": "all"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 25
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 4096
+              }
+            },
+            "required": [
+              "project_uuid"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "$ref": "#/definitions/validate_model_result",
+        "definitions": {
+          "validate_model_result": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "string"
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              },
+              "total": {
+                "type": "number"
+              },
+              "next_cursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "validated_at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "project_uuid",
+              "revision",
+              "items",
+              "total",
+              "next_cursor",
+              "validated_at"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "select_project",
+      "title": "select_project",
+      "description": "Activates an existing project by UUID without closing others. Returns the active identity and revision; finish pending editor operations first.",
+      "status": "stable",
+      "category": "Model Workflows",
+      "annotations": {
+        "destructiveHint": false,
+        "openWorldHint": false,
+        "idempotentHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/select_project",
+        "definitions": {
+          "select_project": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "project_uuid"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "$ref": "#/definitions/select_project_result",
+        "definitions": {
+          "select_project_result": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "project_uuid",
+              "revision"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "apply_model_batch",
+      "title": "apply_model_batch",
+      "description": "Creates groups, cubes and complete meshes with faces/UVs, patches or removes elements in ONE native Undo edit. All targets validate first; failure rolls back. Parent '@ref' addresses a group in this batch (forward references allowed); otherwise use root or an existing UUID/unique name. Mesh vertex keys are local aliases. No implicit screenshot. Active project_uuid required.",
+      "status": "stable",
+      "category": "Model Workflows",
+      "annotations": {
+        "destructiveHint": true,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "$ref": "#/definitions/apply_model_batch",
+        "definitions": {
+          "apply_model_batch": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string"
+              },
+              "expected_revision": {
+                "type": "string",
+                "description": "Revision from inspection; fails before mutation if the project changed.",
+                "markdownDescription": "Revision from inspection; fails before mutation if the project changed."
+              },
+              "operation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "Retry key. Identical requests replay the original result for 10 minutes; changed arguments with the same key fail.",
+                "markdownDescription": "Retry key. Identical requests replay the original result for 10 minutes; changed arguments with the same key fail."
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "default": "Agent model batch"
+              },
+              "groups": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "ref": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "parent": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256,
+                      "default": "root"
+                    },
+                    "origin": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ],
+                      "default": [
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    "rotation": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ],
+                      "default": [
+                        0,
+                        0,
+                        0
+                      ]
+                    }
+                  },
+                  "required": [
+                    "ref",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 256,
+                "default": []
+              },
+              "cubes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "ref": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "parent": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256,
+                      "default": "root"
+                    },
+                    "from": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "to": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "origin": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "rotation": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "texture": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    }
+                  },
+                  "required": [
+                    "ref",
+                    "name",
+                    "from",
+                    "to"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 256,
+                "default": []
+              },
+              "meshes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "ref": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "parent": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256,
+                      "default": "root"
+                    },
+                    "origin": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "rotation": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "vertices": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      }
+                    },
+                    "faces": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "vertices": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$"
+                            },
+                            "minItems": 3,
+                            "maxItems": 4
+                          },
+                          "uv": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "array",
+                              "minItems": 2,
+                              "maxItems": 2,
+                              "items": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            }
+                          },
+                          "texture": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 256
+                          }
+                        },
+                        "required": [
+                          "vertices"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1,
+                      "maxItems": 20000
+                    }
+                  },
+                  "required": [
+                    "ref",
+                    "name",
+                    "vertices",
+                    "faces"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 32,
+                "default": []
+              },
+              "patches": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "from": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "to": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "origin": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "rotation": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "visibility": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 256,
+                "default": []
+              },
+              "remove": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "maxItems": 256,
+                "default": []
+              }
+            },
+            "required": [
+              "project_uuid"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "$ref": "#/definitions/apply_model_batch_result",
+        "definitions": {
+          "apply_model_batch_result": {
+            "type": "object",
+            "properties": {
+              "project_uuid": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "string"
+              },
+              "created": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "patched": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "removed": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Removed root UUIDs; descendants are counted without expanding the result.",
+                "markdownDescription": "Removed root UUIDs; descendants are counted without expanding the result."
+              },
+              "removed_count": {
+                "type": "number"
+              },
+              "replayed": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "project_uuid",
+              "revision",
+              "created",
+              "patched",
+              "removed",
+              "removed_count",
+              "replayed"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
     }
   ],
   "prompts": [
     {
       "name": "blockbench_native_apis",
       "title": "blockbench_native_apis",
-      "description": "Essential information about Blockbench v5.0 native API security model and requireNativeModule() usage. Use this when working with Node.js modules, file system access, or native APIs in Blockbench plugins.",
+      "description": "Concise native module and permission reference for Blockbench 5.1.6 plugin code.",
       "status": "stable",
-      "arguments": null
+      "arguments": {
+        "$ref": "#/definitions/blockbench_native_apis",
+        "definitions": {
+          "blockbench_native_apis": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
     },
     {
       "name": "blockbench_code_eval_safety",
       "title": "blockbench_code_eval_safety",
-      "description": "Critical safety guide for agents using code evaluation/execution tools with Blockbench v5.0+. Contains breaking changes, quick reference, common mistakes, and safe code patterns for native module usage.",
+      "description": "Execution contract, state checks and Undo requirements for the risky_eval escape hatch.",
       "status": "stable",
-      "arguments": null
+      "arguments": {
+        "$ref": "#/definitions/blockbench_code_eval_safety",
+        "definitions": {
+          "blockbench_code_eval_safety": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
     },
     {
       "name": "model_creation_strategy",
       "title": "Model Creation Strategy",
-      "description": "A strategy for creating a new 3D model in Blockbench.",
+      "description": "Efficient native modeling workflow with optional format and approach guidance.",
       "status": "stable",
       "arguments": {
         "$ref": "#/definitions/model_creation_strategy",
@@ -6196,22 +7276,17 @@
             "properties": {
               "format": {
                 "type": "string",
-                "enum": [
-                  "java_block",
-                  "bedrock"
-                ],
-                "description": "Target model format.",
-                "markdownDescription": "Target model format."
+                "description": "Native format ID; inspect get_project_capabilities for available formats.",
+                "markdownDescription": "Native format ID; inspect get_project_capabilities for available formats."
               },
               "approach": {
                 "type": "string",
                 "enum": [
                   "ui",
                   "programmatic",
-                  "import"
-                ],
-                "description": "Creation approach to use.",
-                "markdownDescription": "Creation approach to use."
+                  "import",
+                  "geometry"
+                ]
               }
             },
             "additionalProperties": false
@@ -6223,7 +7298,7 @@
     {
       "name": "hytale_model_creation",
       "title": "Hytale Model Creation Guide",
-      "description": "Comprehensive guide for creating Hytale character and prop models. Covers format selection, node limits, shading modes, stretch, quads, and best practices.",
+      "description": "Format-aware Hytale modeling workflow; requires the optional Hytale plugin.",
       "status": "experimental",
       "arguments": {
         "$ref": "#/definitions/hytale_model_creation",
@@ -6238,8 +7313,6 @@
                   "prop",
                   "both"
                 ],
-                "description": "Which format type to focus on.",
-                "markdownDescription": "Which format type to focus on.",
                 "default": "both"
               }
             },
@@ -6252,7 +7325,7 @@
     {
       "name": "hytale_animation_workflow",
       "title": "Hytale Animation Workflow",
-      "description": "Guide for creating animations for Hytale models. Covers 60 FPS timing, quaternion rotations, visibility keyframes, loop modes, and common animation patterns.",
+      "description": "Native Hytale animation workflow and schema-compatible keyframe guidance.",
       "status": "experimental",
       "arguments": {
         "$ref": "#/definitions/hytale_animation_workflow",
@@ -6268,8 +7341,6 @@
                   "attack",
                   "general"
                 ],
-                "description": "Type of animation to focus on.",
-                "markdownDescription": "Type of animation to focus on.",
                 "default": "general"
               }
             },
@@ -6282,12 +7353,52 @@
     {
       "name": "hytale_attachments",
       "title": "Hytale Attachments System",
-      "description": "Guide for creating and managing attachments in Hytale models. Covers attachment collections, piece bones, modular equipment, and best practices.",
+      "description": "Discover and configure Hytale attachments and pieces using registered resources.",
       "status": "experimental",
-      "arguments": null
+      "arguments": {
+        "$ref": "#/definitions/hytale_attachments",
+        "definitions": {
+          "hytale_attachments": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
     }
   ],
   "resources": [
+    {
+      "name": "model-element",
+      "title": "Compact model element",
+      "description": "Project-scoped element identity, transform and counts. No render graph or recursive children. Use query_model for geometry pages.",
+      "uriTemplate": "model://{project}/elements/{id}"
+    },
+    {
+      "name": "model-texture",
+      "title": "Texture metadata",
+      "description": "Project-scoped texture dimensions, channel and layer count without bitmap data.",
+      "uriTemplate": "model://{project}/textures/{id}"
+    },
+    {
+      "name": "hytale-attachments-collection",
+      "title": "Hytale attachments collection",
+      "description": "Lists attachments in the current Hytale project. Requires the Hytale plugin.",
+      "uriTemplate": "hytale://attachments"
+    },
+    {
+      "name": "hytale-pieces-collection",
+      "title": "Hytale pieces collection",
+      "description": "Lists pieces in the current Hytale project. Requires the Hytale plugin.",
+      "uriTemplate": "hytale://pieces"
+    },
+    {
+      "name": "hytale-cubes-collection",
+      "title": "Hytale cubes collection",
+      "description": "Lists cubes in the current Hytale project. Requires the Hytale plugin.",
+      "uriTemplate": "hytale://cubes"
+    },
     {
       "name": "projects-collection",
       "title": "All Projects",

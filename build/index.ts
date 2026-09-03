@@ -4,11 +4,24 @@ import { resolve, join, normalize, sep } from "node:path";
 import { log, c, isCleanMode, isProduction, isWatchMode } from "./utils";
 import { blockbenchCompatPlugin, textFileLoaderPlugin } from "./plugins";
 import { version } from "../package.json";
+import { generatePromptManifest } from "./generate-manifest";
 
 const OUTPUT_DIR = "./dist";
 // Normalized output dir name for path comparison (strips "./" prefix)
 const OUTPUT_DIR_NAME = normalize(OUTPUT_DIR).replace(/^\.[\\/]/, "");
 const entryFile = resolve("./index.ts");
+
+async function renameOutput(source: string, target: string): Promise<void> {
+  // Windows can briefly lock a bundle while the editor or a verifier reads it.
+  for (let attempt = 0; ; attempt++) {
+    try { await rename(source, target); return; }
+    catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (process.platform !== "win32" || !["EPERM", "EBUSY", "EACCES"].includes(code ?? "") || attempt >= 8) throw error;
+      await new Promise(resolve => setTimeout(resolve, 25 * (attempt + 1)));
+    }
+  }
+}
 
 async function cleanOutputDir() {
   try {
@@ -25,6 +38,9 @@ async function cleanOutputDir() {
 
 // Function to handle the build process
 async function buildPlugin(): Promise<boolean> {
+  const buildId = crypto.randomUUID();
+  // Bundle only after generating its prompt dependency, including watch builds.
+  await generatePromptManifest();
   // Ensure output directory exists
   try {
     await mkdir(OUTPUT_DIR, { recursive: true });
@@ -72,6 +88,7 @@ async function buildPlugin(): Promise<boolean> {
     define: {
       "process.env.NODE_ENV": isProduction ? '"production"' : '"development"',
       __DEV__: isProduction ? "false" : "true",
+      __BUILD_ID__: JSON.stringify(buildId),
     },
     // Remove debugger statements in production
     drop: isProduction ? ["debugger"] : [],
@@ -99,7 +116,7 @@ async function buildPlugin(): Promise<boolean> {
   const mcpFile = join(OUTPUT_DIR, "mcp.js");
 
   if (await Bun.file(indexFile).exists()) {
-    await rename(indexFile, mcpFile);
+    await renameOutput(indexFile, mcpFile);
     log.step(`Renamed ${c.gray}index.js${c.reset} → ${c.cyan}mcp.js${c.reset}`);
   }
 
@@ -120,7 +137,7 @@ let process = requireNativeModule('process');
   const mcpMapFile = join(OUTPUT_DIR, "mcp.js.map");
 
   if (await Bun.file(indexMapFile).exists()) {
-    await rename(indexMapFile, mcpMapFile);
+    await renameOutput(indexMapFile, mcpMapFile);
     const map = await Bun.file(mcpMapFile).json();
     map.file = "mcp.js";
     // Two banner lines precede the generated bundle.
@@ -139,6 +156,7 @@ let process = requireNativeModule('process');
     log.step(`Copied ${c.cyan}about.md${c.reset}`);
   }
 
+  await Bun.write(join(OUTPUT_DIR,"build-info.json"),JSON.stringify({version,build_id:buildId},null,2));
   return true;
 }
 
@@ -163,8 +181,11 @@ function watchFiles() {
         pendingRebuild = false;
         log.header(`${c.yellow}[Build] Rebuild${c.reset}`);
         log.step(`File changed: ${c.cyan}${filename}${c.reset}`);
-        await buildPlugin();
-        log.success("Rebuild complete");
+        try {
+          if (await buildPlugin()) log.success("Rebuild complete");
+        } catch (error) {
+          log.error(`Rebuild failed: ${error}`);
+        }
       } while (pendingRebuild);
     })();
 
@@ -183,6 +204,11 @@ function watchFiles() {
 
       // Normalize filename for consistent comparison
       const normalizedFilename = normalize(filename);
+      const root = normalizedFilename.split(sep)[0];
+      if ([".git", ".verification", ".agents", ".codex", "node_modules", "tests", "docs"].includes(root)) return;
+      // Ignore directory events (including the prompts directory event caused
+      // by writing its manifest) and files unrelated to the plugin bundle.
+      if (!/\.(?:ts|js|json|md|svg)$/.test(normalizedFilename)) return;
 
       // Ignore output directory (compare normalized paths)
       if (
@@ -197,7 +223,12 @@ function watchFiles() {
         normalizedFilename.endsWith(".js.map") ||
         normalizedFilename.includes(".git") ||
         normalizedFilename.startsWith(`node_modules${sep}`) ||
-        normalizedFilename === "node_modules"
+        normalizedFilename === "node_modules" ||
+        normalizedFilename.startsWith(`.verification${sep}`) ||
+        normalizedFilename.startsWith(`tests${sep}`) ||
+        normalizedFilename.startsWith(`docs${sep}`) ||
+        normalizedFilename.endsWith(".test.ts") ||
+        normalizedFilename === `prompts${sep}manifest.json`
       ) {
         return;
       }

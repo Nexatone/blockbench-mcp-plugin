@@ -13,7 +13,18 @@ https://github.com/user-attachments/assets/ab1b7e63-b6f0-4d5b-85ab-79d328de31db
 
 ## Plugin Installation
 
-Build this version from the checked-out branch:
+For the maintained deployment, open desktop Blockbench's **File → Plugins** and
+use **Load Plugin from URL** with:
+
+```text
+https://itsjosshy.github.io/blockbench-mcp-plugin/nightly/mcp.js
+```
+
+If another MCP Server installation is present, uninstall that copy before changing
+its source. After a successful `main` deployment, use **Reload** on the URL plugin
+and reconnect your MCP client. Pull requests do not update the hosted plugin.
+
+To test unmerged changes, build from the checked-out branch:
 
 ```sh
 bun install --frozen-lockfile
@@ -28,10 +39,47 @@ bun run dev
    to `http://127.0.0.1:3000/bb-mcp` (or the port/endpoint configured in Settings).
 
 The local plugin is loaded from that file. Keep it in place; after rebuilding,
-use **Reload** in the plugin card. The original project's hosted install URL
-loads the upstream version. For tests and build details, see [CONTRIBUTING.md](CONTRIBUTING.md).
+use **Reload** in the plugin card. For 1.2.0 and newer, compare the build ID from
+`get_project_capabilities` with `dist/build-info.json` before live verification.
+To return to URL updates, replace the file installation with the maintained URL
+above. For tests and build details, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Model Context Protocol Server
+
+Discover the connected server's tools and version first. The workflow below
+requires **1.2.0 or newer**; a hosted build can lag an unmerged checkout.
+For agent modeling, start with `get_project_info` and `get_project_capabilities`.
+Use `query_model` for bounded pages and `get_element` for one compact element;
+retain their UUIDs instead of repeatedly searching names. Raw `nodes://` resources
+are legacy rendering data and can be very large.
+
+Use `apply_model_batch` to create groups, cubes and complete meshes, or patch/remove
+elements in one Undo step. Supply the project UUID and inspected revision. Local
+`@ref` parents let a batch construct a hierarchy without intermediate lookups:
+
+```json
+{
+  "project_uuid": "UUID from inspection",
+  "expected_revision": "revision from inspection",
+  "operation_id": "unique ID for this intended edit",
+  "groups": [{"ref": "body", "name": "Body"}],
+  "cubes": [{"ref": "box", "name": "Box", "parent": "@body", "from": [0,0,0], "to": [8,8,8]}]
+}
+```
+
+The result maps local references to created UUIDs. While retained in the bounded
+retry cache (up to ten minutes), identical retries with the same operation ID
+return the original result without another edit; use a new ID for changed work.
+Revisions, cursors and retry records reset on plugin reload.
+Call `validate_model` and take a final screenshot when useful. `create_texture`
+and `from_geo_json` accept `include_preview: false` to return identities without
+an image. Texture layer management accepts `layer_id` from a `texture_layers` query.
+
+Save with `export_model` using `codec_id: "project"`; pass `path` and
+`max_content_length: 0` when a file is sufficient. `open_project` opens `.bbmodel`
+data in a new tab, and `select_project` switches existing tabs by UUID.
+See the [implementation and verification report](docs/efficiency-implementation.md)
+for measured improvements, compatibility and remaining work.
 
 Configure the MCP server under Blockbench settings: **Settings** > **General** > **MCP Server Port** and **MCP Server Endpoint**
 

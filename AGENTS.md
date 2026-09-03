@@ -40,7 +40,7 @@
 - `server/`: MCP server glue (`server.ts`), `tools/`, `resources.ts`, `prompts.ts`.
 - `ui/`: Panel UI and settings (`index.ts`, `settings.ts`).
 - `lib/`: Shared utilities and factories (`constants.ts`, `factories.ts`, `util.ts`, `zodObjects.ts`).
-- `prompts/` and `macros/`: Prompt templates and helpers.
+- `prompts/`: Prompt templates and generated manifest, loaded by `lib/promptLoader.ts`.
 - `dist/`: Build output (`mcp.js`, maps, copied assets like `icon.svg`, `about.md`).
 - `docs/`: Auto-generated documentation (`api.json`, `index.html`, `style.css`).
 - `build/`: Build scripts (`index.ts`, `utils.ts`, `plugins.ts`, `docs.ts`, `docs-manifest.ts`).
@@ -88,6 +88,7 @@ export const myToolDocs: ToolSpec[] = [
 export function registerMyTools() {
   createTool(myToolDocs[0].name, {
     ...myToolDocs[0],
+    parameters: myToolParameters,
     async execute({ name }) {
       // Blockbench globals (Undo, Canvas, etc.) are safe here
       return `Hello, ${name}!`;
@@ -112,11 +113,27 @@ Parameter schemas are imported at build time by the doc generator, which runs ou
 
 Documentation is auto-generated from Zod schemas at build time:
 
-- **`build/docs-manifest.ts`**: Imports all `toolDocs` arrays from tool files plus inline prompt/resource specs. This is the single source of truth for what appears in the docs.
+- **`build/docs-manifest.ts`**: Aggregates tool specs, shared prompt specs and resource metadata for documentation.
 - **`build/docs.ts`**: Reads the manifest, converts Zod schemas to JSON Schema via `zod-to-json-schema`, and outputs `docs/api.json` (machine-readable) and `docs/index.html` (Tailwind-styled page).
 - **`lib/factories.ts`**: Defines `ToolSpec`, `PromptSpec`, and `ResourceSpec` interfaces used by both tool files and the manifest.
 
-Prompt and resource specs are defined **inline in the manifest** (not imported from their source files) because `server/prompts.ts` uses Bun macros and `server/resources.ts` accesses Blockbench globals at module level.
+Prompt specs live in the globals-free `server/prompt-specs.ts`; compact resource
+specs are shared from `server/resources/model.ts`. Legacy resource metadata remains
+inline in the manifest because its runtime modules access Blockbench globals.
+Prompts use `getPromptContent` and a generated JSON manifest, not Bun macros.
+
+For agent-oriented additions, prefer bounded structured results with UUIDs and
+output schemas. Keep full-object schema validation. Tool calls share the editor
+queue; prepare asynchronous work before a short synchronous `withUndoEdit`
+commit, then recheck project identity/revision and cancellation. Never await while
+owning native Undo, and do not wrap native actions that already own a transaction.
+Use `get_project_capabilities` to compare the running build ID with
+`dist/build-info.json` before claiming live verification of a specific build.
+
+When workflows or contracts change, sweep README, CONTRIBUTING, CLAUDE, the
+`llms-install.md` entry points and `.github` instructions/prompts/templates as well
+as generated API docs. Keep historical reports labeled with their tested versions;
+link to current guidance instead of rewriting historical results.
 
 ## Coding Style & Naming Conventions
 - Language: TypeScript (strict), ESNext modules, CJS output for the plugin.

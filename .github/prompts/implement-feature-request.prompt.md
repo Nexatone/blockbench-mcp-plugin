@@ -6,119 +6,72 @@ tools: ['githubRepo', 'get_file_contents', 'search_code', 'blockbench']
 
 # Implement MCP Feature Request
 
-You are implementing a new MCP feature based on a GitHub issue created using the `mcp-feature-request.yml` template. Parse the issue content below and implement the feature according to the specification.
+Implement the feature described below, following root `AGENTS.md`, `README.md`,
+`CONTRIBUTING.md`, `VERSIONING.md` and the latest changelog. Inspect Git state first
+and preserve existing work. The issue is the feature specification; follow the
+user's current authorization for scope and remote actions.
 
 ## Issue Content
 
 ${input:issueContent}
 
----
+## Implementation
 
-## Implementation Instructions
-
-### 1. Parse the Feature Request
-
-Extract the following from the issue:
-
-- **Feature Type**: Tool, Resource, or Prompt
-- **Feature Name**: The snake_case identifier
-- **Description**: What the feature does
-- **Domain**: Which tool file to add this to (animation.ts, texture.ts, mesh.ts, etc.)
-- **Parameters**: Input schema with types and validation
-- **Output**: Expected return value format
-- **Annotations**: readOnlyHint, destructiveHint based on the answers
-
-### 2. Determine the Target File
-
-Based on the Domain field, add the feature to the appropriate file:
+Extract the requested feature type, name, domain, inputs, output contract and edge
+cases. Check existing tools/resources/prompts before adding another entry point.
+Infer effect annotations from the implementation: Undo support alone does not
+make deletion non-destructive or repeated creation idempotent.
 
 | Domain | File |
-|--------|------|
+| --- | --- |
 | Animation | `server/tools/animation.ts` |
 | Camera | `server/tools/camera.ts` |
 | Cubes | `server/tools/cubes.ts` |
 | Elements | `server/tools/element.ts` |
-| Import/Export | `server/tools/import.ts` |
+| Import/Export | `server/tools/import.ts`, `server/tools/export.ts` |
 | Mesh | `server/tools/mesh.ts` |
+| Model inspection/validation | `server/tools/model.ts` |
+| Atomic geometry batches | `server/tools/model-batch.ts` |
 | Paint | `server/tools/paint.ts` |
 | Project | `server/tools/project.ts` |
 | Texture | `server/tools/texture.ts` |
 | UI | `server/tools/ui.ts` |
 | UV | `server/tools/uv.ts` |
 
-### 3. Implement the Feature
+Use the official `@modelcontextprotocol/sdk` and the two-part tool registration
+example in `CONTRIBUTING.md`: globals-free Zod schemas plus exported tool specs,
+then `createTool` registration. Add domain registration in `server/tools.ts` and
+specs in `build/docs-manifest.ts`. Prefer bounded structured outputs with UUIDs,
+counts and revisions; paginate large data and make images optional. Preserve
+existing names, defaults and payload contracts unless intentionally versioned.
 
-For **Tools**, use this pattern:
+For resources, use `createResource`, share globals-free specs where possible and
+register advertised collection URIs. For prompts, use `createPrompt`, shared
+metadata in `server/prompt-specs.ts` and `getPromptContent` for bundled fragments.
+Keep runtime and generated documentation consistent.
 
-```typescript
-createTool(
-  "feature_name",
-  {
-    description: "Description from issue",
-    annotations: {
-      title: "Human Readable Title",
-      readOnlyHint: true/false,  // Based on "Is this read-only?" answer
-      destructiveHint: true/false,  // Based on "Is this destructive?" answer
-    },
-    parameters: z.object({
-      // Convert parameters from issue to Zod schema
-      // string -> z.string()
-      // number -> z.number()
-      // boolean -> z.boolean()
-      // array[3] -> z.array(z.number()).length(3)
-      // enum[a,b,c] -> z.enum(["a", "b", "c"])
-      // Add .optional() for optional params
-      // Add .default(value) for defaults
-      // Add .describe("...") for each parameter
-    }),
-    async execute({ /* destructured params */ }) {
-      // Implement using Blockbench API
-      // Use Undo.initEdit/finishEdit for modifications
-      // Use Canvas.updateAll() after visual changes
-      // Return appropriate output format
-    },
-  },
-  STATUS_EXPERIMENTAL  // Use STATUS_STABLE after testing
-);
-```
+Verify Blockbench APIs against the relevant `JannisX11/blockbench` source version.
+Preflight references and format support before mutation. All tools share the
+editor queue; prepare asynchronous work before a short synchronous `withUndoEdit`
+commit and recheck project/revision/cancellation. Never await while owning Undo
+or nest a transaction around a native action that owns one. Refresh only affected
+preview data when supported. Return actionable errors without partial edits.
 
-For **Resources**, use `createResource()` pattern.
+## Verification and delivery
 
-For **Prompts**, use `createPrompt()` pattern.
-
-### 4. Error Handling
-
-Based on the "Edge Cases & Error Handling" section:
-
-- Use helper functions like `findTextureOrThrow()`, `findElementOrThrow()` for lookups
-- Throw descriptive errors with actionable suggestions
-- Validate inputs before performing operations
-
-### 5. Testing
-
-After implementation:
-
-1. Run `bun run build` to verify compilation
-2. Use `blockbench_risky_eval` to test the feature in Blockbench
-3. Verify the output matches the expected format from the issue
-
-### 6. Reference Blockbench Source
-
-If the "Relevant Blockbench API" section is empty or incomplete:
-
-- Search `JannisX11/blockbench` for relevant code
-- Check `blockbench-types` for type definitions
-- Reference similar existing tools in this codebase
-
----
-
-## Checklist
-
-- [ ] Feature name matches the issue specification
-- [ ] All parameters are implemented with correct types
-- [ ] Required/optional status matches the issue
-- [ ] Output format matches the expected output
-- [ ] Error cases from the issue are handled
-- [ ] Undo support added for destructive operations
-- [ ] Build succeeds without errors
-- [ ] Related features mentioned in issue are considered
+- Verify inputs, structured results, effect annotations and relevant related tools.
+- Exercise Undo/Redo and rollback for edits; check retry and revision behavior
+  where the contract supports it. Use disposable models and preserve unrelated
+  tabs, saved flags, Undo histories and selections.
+- Run `bun run test`, `bun run typecheck`, `bun run build` and `bun run docs:build`.
+  Record existing type diagnostics separately from regressions.
+- Load/reload the local bundle and compare `get_project_capabilities` with
+  `dist/build-info.json` before claiming exact-build live verification. Discover
+  tool names as exposed by the client; prefer typed tools, using `risky_eval`
+  only for native inspection/verification unavailable through them.
+- Apply one version bump and changelog entry for the complete plugin-affecting
+  PR, rechecking the target version against current `main`. Regenerate tracked
+  assets and update relevant README, contributor and agent context.
+- Report behavior, compatibility, old/new version, actual validation, remaining
+  limitations and URL/file loading instructions. Follow the user's authorization
+  for commits, pushes, PRs, merges and releases.

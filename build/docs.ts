@@ -19,8 +19,10 @@ interface ToolDocEntry {
     destructiveHint?: boolean;
     readOnlyHint?: boolean;
     openWorldHint?: boolean;
+    idempotentHint?: boolean;
   };
   parameters: object;
+  outputSchema?: object;
 }
 
 interface PromptDocEntry {
@@ -76,8 +78,10 @@ function convertToolSpec(spec: ToolSpec, category: string): ToolDocEntry {
       destructiveHint: spec.annotations?.destructiveHint,
       readOnlyHint: spec.annotations?.readOnlyHint,
       openWorldHint: spec.annotations?.openWorldHint,
+      idempotentHint: spec.annotations?.idempotentHint,
     },
     parameters: convertSchema(spec.name, spec.parameters),
+    ...(spec.outputSchema ? {outputSchema: convertSchema(`${spec.name}_result`,spec.outputSchema)} : {}),
   };
 }
 
@@ -117,6 +121,7 @@ function slugify(str: string): string {
 }
 
 function getTypeLabel(schema: Record<string, unknown>): string {
+  if (Array.isArray(schema.type)) return schema.type.join(" | ");
   if (schema.enum) return (schema.enum as string[]).map((v) => `"${v}"`).join(" | ");
   if (schema.anyOf) return (schema.anyOf as Record<string, unknown>[]).map(getTypeLabel).join(" | ");
   if (schema.oneOf) return (schema.oneOf as Record<string, unknown>[]).map(getTypeLabel).join(" | ");
@@ -216,6 +221,8 @@ function renderToolCard(tool: ToolDocEntry): string {
   const innerSchema =
     ((schema.definitions as Record<string, unknown> | undefined)?.[tool.name] as Record<string, unknown>) ??
     schema;
+  const output = tool.outputSchema as Record<string,unknown> | undefined;
+  const outputSchema = (output?.definitions as Record<string,Record<string,unknown>> | undefined)?.[`${tool.name}_result`] ?? output;
 
   return `<div id="tool-${tool.name}" class="card tool-card">
       <div class="card-header">
@@ -229,6 +236,7 @@ function renderToolCard(tool: ToolDocEntry): string {
       <p class="card-desc">${escapeHtml(tool.description)}</p>
       <div class="overflow-x">
         ${renderParametersTable(innerSchema)}
+        ${outputSchema ? `<details><summary>Structured result</summary>${renderParametersTable(outputSchema)}</details>` : ""}
       </div>
     </div>`;
 }
@@ -413,7 +421,7 @@ async function main() {
   log.step("Writing docs/index.html...");
   const htmlPath = docsDir + "/index.html";
   const htmlContent = await generateHtml(output);
-  await Bun.write(htmlPath, htmlContent);
+  await Bun.write(htmlPath, htmlContent.replace(/[ \t]+$/gm, ""));
   log.info(`  ${htmlPath}`);
 
   log.success(

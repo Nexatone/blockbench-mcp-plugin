@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { z } from "zod";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { createTool, createResource, getAllToolDefinitions, registerToolsOnServer, registerResourcesOnServer } from "./factories";
+import { createTool, createResource, jsonResult, getAllToolDefinitions, registerToolsOnServer, registerResourcesOnServer } from "./factories";
 import { createServer, getServer } from "@/server/server";
 
 let calls = 0;
@@ -16,6 +16,13 @@ createTool("review_validation_fixture", {
 createResource("review-resource-fixture", {
   uriTemplate: "review://items/{id}", collectionUri: "review://items", description: "Collection test",
   async readCallback(uri, { id }) { return { contents: [{ uri: uri.href, text: JSON.stringify({ id: id ?? null }) }] }; },
+});
+createTool("review_output_fixture", {
+  description:"Structured output validation fixture",
+  annotations:{readOnlyHint:true},
+  parameters:z.object({invalid:z.boolean().default(false)}),
+  outputSchema:z.object({value:z.number()}),
+  async execute({invalid}) { return jsonResult({value:invalid?"wrong":42}); },
 });
 
 test("UI execution applies nested defaults and rejects cross-field errors before mutation", async () => {
@@ -42,6 +49,11 @@ for (const reconstructed of [false, true]) test(`SDK registration retains valida
     expect(calls).toBe(before);
     const valid = await client.callTool({ name: "review_validation_fixture", arguments: {} });
     expect(JSON.parse((valid.content as { text: string }[])[0].text).nested.width).toBe(64);
+    expect(listed.tools.find(tool=>tool.name==="review_output_fixture")?.outputSchema).toBeDefined();
+    const structured = await client.callTool({name:"review_output_fixture",arguments:{}});
+    expect(structured.structuredContent).toEqual({value:42});
+    const badOutput = await client.callTool({name:"review_output_fixture",arguments:{invalid:true}});
+    expect(badOutput.isError).toBe(true);
     const collection = await client.readResource({ uri: "review://items" });
     expect(JSON.parse((collection.contents[0] as { text: string }).text).id).toBe(null);
     const item = await client.readResource({ uri: "review://items/cube" });

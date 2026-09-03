@@ -4,6 +4,55 @@ Record user-visible changes by plugin version. See [VERSIONING.md](VERSIONING.md
 for bump rules and publication handling. Original license and contributor credits
 remain in the repository; historical reviews describe their original test builds.
 
+## [1.2.0] - Unreleased
+
+### Added
+
+- Compact, paginated `query_model`, `get_element`, project capabilities and native
+  validation results with project UUIDs, revisions and typed output schemas.
+  Project-scoped element/texture resources avoid serializing render graphs.
+- `apply_model_batch` creates groups, cubes and complete meshes with faces/UVs,
+  patches or removes elements in one native Undo edit. It preflights references,
+  rolls back failures and supports bounded, ten-minute operation-ID deduplication.
+- `open_project` imports native `.bbmodel` data into an isolated tab;
+  `select_project` activates an existing tab by UUID.
+- Structured project/texture identities on imports and texture creation, optional
+  previews, and explicit layer IDs for texture layer management.
+
+### Fixed
+
+- Index resource slugs once per collection while preserving existing URIs.
+- Serialize tool execution across clients, reject changed projects or pending
+  edits, and pass cooperative cancellation/progress through the MCP factory.
+- Preserve multibone/additive selection and reject invalid targets before clearing
+  selection. Mesh component selection uses native selection history without
+  dirtying model data. Invalid regular expressions now return actionable errors.
+- Revert failed brush/keyframe/layer transactions with native Undo ownership
+  checks. Avoid repeated face scans during vertex deletion and discarded binary
+  encoding during export; reject a project switch while a codec compiles.
+- Supply a useful default modeling prompt, correct native API and optional Hytale
+  guidance, and share prompt specifications between registration and generated docs.
+  Register advertised Hytale collection URIs when that integration is present.
+- Align contributor examples, agent context and GitHub task templates with the
+  current SDK, compact workflow, build verification and URL/file installation paths.
+- Apply the MCP instructions setting to server initialization. Watch builds
+  regenerate prompt content before bundling and ignore generated/test artifacts.
+  Retry transient Windows output locks and keep watching after failed builds.
+  Build identities allow verifying the exact locally loaded bundle.
+
+### Compatibility
+
+- Compatible additions: existing tool names, resource payloads and preview defaults
+  remain available. `nodes://` remains potentially large; prefer the compact APIs.
+  Invalid regex/parent/selection requests intentionally fail before edits.
+- Revisions, cursors and retry caches are transient and reset on reload. A replay
+  returns the original result; it does not redo a later Undo. Use a new operation
+  ID for a new edit. Revisions follow native edit/Undo/Redo events and conservatively
+  invalidate after `risky_eval`; plugins bypassing these events can evade detection.
+- The existing SDK/HTTP protocol remains in use. Current-protocol migration,
+  optional tool profiles and unmeasured CPU rewrites are separate follow-ups.
+  Hytale remains experimental and was not live-tested without its optional plugin.
+
 ## [1.1.0] - Unreleased
 
 ### Changed

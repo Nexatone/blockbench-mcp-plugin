@@ -4,26 +4,41 @@ description: This is a Blockbench plugin that integrates with the Model Context 
 tools: ['githubRepo', 'get_commit', 'get_file_contents', 'list_branches', 'search_code', 'search_repositories', 'blockbench']
 ---
 
-# Project Overview
+# Create or improve an MCP tool
 
-This project is a Blockbench plugin which integrates with the Model Context Protocol (MCP) to allow AI models to interact with Blockbench through commands or directly execute JavaScript code in its context.
-
-The plugin is written in TypeScript and uses Bun to compile the code into JavaScript for Blockbench to execute in its Electron Node.js environment. The plugin utilizes FastMCP for handling the MCP protocol in TypeScript.
-
-### MCP Resources
-As an AI agent, you have access to a GitHub MCP server, which should be used to reference Blockbench's Electron source code in #githubRepo JannisX11/blockbench to find missing types or understand how to interact with Blockbench's API or FastMCP's API (#githubRepo punkpeye/fastmcp). You can also reference the existing Blockbench plugins in the Blockbench Plugin Repository #githubRepo JannisX11/blockbench-plugins.
-
-Additionally, you can use the `blockbench_risky_eval` tool to execute JavaScript code in the context of Blockbench, which is useful for testing and debugging purposes.
-
-# TODO
-- Add a new MCP tool to the plugin based on the following prompt:
+Implement the following request:
 
 ${input:chatPrompt}
 
-## Note
-- If any of this functionality already exist in the project, inspect it for enhancements or bugs. Suggest changes if necessarry but confirm before applying any.
-- Avoid cutting any corners and ensure the task is done well-enough to be used in production.
-- If you are unsure about the implementation, ask for clarification or additional context.
-- Document your code thoroughly to aid future maintenance and collaboration.
+Read root `AGENTS.md`, `README.md`, `CONTRIBUTING.md`, `VERSIONING.md` and the latest
+changelog first. Inspect Git state and preserve existing work. Improve an existing
+tool when it already covers the request; follow the user's authorization without
+asking again for work already authorized.
 
-Finally, run `bun run compile` to compile the TypeScript code into JavaScript for Blockbench to execute.
+This plugin uses TypeScript, Bun and the official `@modelcontextprotocol/sdk` in
+desktop Blockbench. Verify native behavior against the relevant version of
+`JannisX11/blockbench`; use `modelcontextprotocol/typescript-sdk` for SDK behavior.
+
+Follow the two-part example in `CONTRIBUTING.md`: export globals-free input/output
+schemas and a tool-docs array, then register through `createTool`. Include the
+registration in `server/tools.ts` and specs in `build/docs-manifest.ts`. Preserve
+full-object refinements and choose effect annotations from actual behavior.
+Prefer bounded structured IDs/counts/revisions, pagination and optional previews.
+
+Tools share the editor queue. Preflight references and native format support;
+prepare asynchronous data before a short synchronous `withUndoEdit` commit,
+rechecking project/revision and cancellation. Never await while owning Undo or
+wrap an action that owns its own transaction. Refresh affected preview data only.
+
+Apply the version/changelog rules once for the whole PR. Update relevant prompts,
+README and agent context. Run `bun run test`, `bun run typecheck`, `bun run build`
+and `bun run docs:build`; report existing type diagnostics separately from new ones.
+
+Use the connected tools as actually exposed by the client; registered names have
+no automatic prefix. Prefer typed tools for live checks. Use `risky_eval` only for
+native inspection or verification unavailable through typed tools. Before claiming
+a local build was tested, load/reload `dist/mcp.js` and compare the build ID from
+`get_project_capabilities` with `dist/build-info.json`. Preserve unrelated projects,
+saved flags, Undo history and selections. Report behavior, version impact,
+validation, limitations and loading instructions; do not publish beyond the user's
+authorization.

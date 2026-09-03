@@ -1,0 +1,159 @@
+{
+  "date": "2026-09-03T04:51:54.589Z",
+  "version": "1.2.0",
+  "blockbench": "5.1.6",
+  "build_id": "c08befe6-9c7f-4b95-8e85-7329284d5701",
+  "bundle_sha256": "80fcad9046cd40ac5fd286609f260aab7265105bd4af3686863ee0702b8868a9",
+  "loaded_from": "dist/mcp.js",
+  "measurements": {
+    "timings": [
+      {
+        "operation": "resources/list",
+        "ms": 17.2406,
+        "bytes": 134322
+      },
+      {
+        "operation": "resources/list",
+        "ms": 8.627299999999991,
+        "bytes": 134322
+      },
+      {
+        "operation": "resources/list",
+        "ms": 9.806600000000003,
+        "bytes": 134322
+      },
+      {
+        "operation": "resources/list",
+        "ms": 5.888599999999997,
+        "bytes": 134322
+      },
+      {
+        "operation": "compact_model_element",
+        "bytes": 433
+      },
+      {
+        "operation": "complete_model_batch",
+        "ms": 18.759299999999996
+      }
+    ],
+    "catalogue": {
+      "tools": 101,
+      "outputSchemas": 9,
+      "catalogueBytes": 103285,
+      "catalogueTimesMs": [
+        11.026499999999999,
+        6.1170999999999935,
+        12.507100000000008,
+        13.004999999999995,
+        9.445499999999996,
+        4.591999999999999,
+        13.093699999999998,
+        14.82159999999999
+      ],
+      "resourceTemplates": 6,
+      "documentedTools": 113,
+      "documentedResources": 21,
+      "promptReferenceBytes": 2226,
+      "bundleBytes": 626275
+    }
+  },
+  "verification": {
+    "automated": {
+      "passed": 66,
+      "failed": 0,
+      "assertions": 424,
+      "files": 19
+    },
+    "typecheck": {
+      "baseline": 72,
+      "current": 67,
+      "newDiagnostics": 0
+    },
+    "liveScenarios": [
+      {
+        "name": "resource_discovery_and_compact_reads",
+        "pass": true,
+        "detail": {
+          "tools": 101
+        }
+      },
+      {
+        "name": "atomic_complete_geometry_undo_redo_retry",
+        "pass": true,
+        "detail": {
+          "created": 4,
+          "undoEntries": 1,
+          "retry": "deduplicated"
+        }
+      },
+      {
+        "name": "preflight_and_native_failure_rollback",
+        "pass": true
+      },
+      {
+        "name": "bounded_pages_and_stale_cursor",
+        "pass": true
+      },
+      {
+        "name": "patch_visibility_and_remove_subtree_undo_redo",
+        "pass": true
+      },
+      {
+        "name": "search_and_native_selection_fixes",
+        "pass": true
+      },
+      {
+        "name": "native_validation_fresh_result",
+        "pass": true,
+        "detail": {
+          "problems": 0
+        }
+      },
+      {
+        "name": "serialize_concurrent_tools",
+        "pass": true,
+        "detail": {
+          "elapsed": 187.94640000000004,
+          "clients": 2
+        }
+      },
+      {
+        "name": "reject_queued_project_change",
+        "pass": true
+      },
+      {
+        "name": "viewport_and_save_reopen",
+        "pass": true
+      },
+      {
+        "name": "texture_identity_optional_preview_and_explicit_layer",
+        "pass": true
+      }
+    ],
+    "existingSuites": {
+      "stability": {
+        "scenarios": 7,
+        "allPassed": true
+      },
+      "remaining": {
+        "scenarios": 7,
+        "allPassed": true
+      },
+      "bug_review": {
+        "scenarios": 7,
+        "allPassed": true
+      }
+    },
+    "preservation": {
+      "projects": 19,
+      "activeRestored": true,
+      "allRecordedChecksPassed": true
+    },
+    "finalPreservation": {
+      "projects": 19,
+      "allPassed": true,
+      "activeRestored": true
+    },
+    "watchPromptRegeneration": "passed"
+  }
+}
