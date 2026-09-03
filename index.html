@@ -11,16 +11,16 @@
     <nav class="sidebar">
       <div class="sidebar-brand">
         <h1>Blockbench MCP</h1>
-        <p>v1.1.0 — API Reference</p>
+        <p>v1.2.0 — API Reference</p>
       </div>
 
       <input id="search" type="text" placeholder="Search tools..." class="search-input" />
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(106)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(113)</span></a>
         <a href="#prompts" class="nav-link">Prompts <span class="count">(6)</span></a>
-        <a href="#resources" class="nav-link">Resources <span class="count">(16)</span></a>
+        <a href="#resources" class="nav-link">Resources <span class="count">(21)</span></a>
       </div>
 
       <div class="nav-group">
@@ -32,7 +32,7 @@
         <a href="#cat-elements" class="nav-link">Elements <span class="count">(9)</span></a>
         <a href="#cat-export" class="nav-link">Export <span class="count">(2)</span></a>
         <a href="#cat-history" class="nav-link">History <span class="count">(4)</span></a>
-        <a href="#cat-import-export" class="nav-link">Import/Export <span class="count">(1)</span></a>
+        <a href="#cat-import-export" class="nav-link">Import/Export <span class="count">(2)</span></a>
         <a href="#cat-material-instances" class="nav-link">Material Instances <span class="count">(5)</span></a>
         <a href="#cat-mesh-editing" class="nav-link">Mesh Editing <span class="count">(11)</span></a>
         <a href="#cat-paint-tools" class="nav-link">Paint Tools <span class="count">(12)</span></a>
@@ -41,17 +41,18 @@
         <a href="#cat-ui-interaction" class="nav-link">UI Interaction <span class="count">(4)</span></a>
         <a href="#cat-uv-mapping" class="nav-link">UV Mapping <span class="count">(3)</span></a>
         <a href="#cat-hytale-integration" class="nav-link">Hytale Integration <span class="count">(12)</span></a>
+        <a href="#cat-model-workflows" class="nav-link">Model Workflows <span class="count">(6)</span></a>
       </div>
     </nav>
 
     <main class="main">
       <header class="page-header">
         <h1>Blockbench MCP Plugin</h1>
-        <p class="subtitle">API Reference — v1.1.0</p>
+        <p class="subtitle">API Reference — v1.2.0</p>
         <nav class="stats">
-          <a href="#tools"><strong>106</strong> tools (91 stable, 15 experimental)</a>
+          <a href="#tools"><strong>113</strong> tools (98 stable, 15 experimental)</a>
           <a href="#prompts"><strong>6</strong> prompts</a>
-          <a href="#resources"><strong>16</strong> resources</a>
+          <a href="#resources"><strong>21</strong> resources</a>
         </nav>
       </header>
 
@@ -61,6 +62,11 @@
 For unmerged changes, build and load this checkout's <code>dist/mcp.js</code> instead.
 See <a href="../../README.md">README</a> for client configuration and loading instructions.
 The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
+<p>Reuse an available MCP connection before changing configuration. Discover its
+version and tools; the hosted URL does not contain unmerged changes. For local
+1.2.0+ verification, compare <code>get_project_capabilities</code> with <code>dist/build-info.json</code>.
+See <a href="../../llms-install.md">agent installation guidance</a> and the README's compact
+modeling workflow for inspection, edits and project preservation.</p>
 
       </section>
 
@@ -110,6 +116,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Faces to apply the texture to. Set to `true` to enable auto UV mapping. <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-modify_cube" class="card tool-card">
@@ -199,6 +206,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Whether the cube is visible or not.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
         </section>
@@ -231,6 +239,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Project name or UUID.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-capture_app_screenshot" class="card tool-card">
@@ -245,6 +254,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <p class="card-desc">Returns the image data of the Blockbench app.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
+
       </div>
     </div>
 <div id="tool-set_camera_angle" class="card tool-card">
@@ -289,6 +299,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Camera projection type.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
         </section>
@@ -341,6 +352,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Particle effects with timestamps as keys</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-manage_keyframes" class="card tool-card">
@@ -390,6 +402,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Keyframe data for the action.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-animation_graph_editor" class="card tool-card">
@@ -449,6 +462,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Custom bezier curve control points (only for 'custom' action).</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-bone_rigging" class="card tool-card">
@@ -483,6 +497,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Bone configuration data.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-animation_timeline" class="card tool-card">
@@ -537,6 +552,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Time range for selection.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-batch_keyframe_operations" class="card tool-card">
@@ -586,6 +602,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Operation-specific parameters.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-animation_copy_paste" class="card tool-card">
@@ -625,6 +642,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Target data for paste operation.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
         </section>
@@ -642,6 +660,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <p class="card-desc">Lists all armatures in the current project with their basic info.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
+
       </div>
     </div>
 <div id="tool-get_armature" class="card tool-card">
@@ -676,6 +695,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Whether to include bone hierarchy in response. <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-add_armature" class="card tool-card">
@@ -720,6 +740,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Whether to add an initial bone to the armature. <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-remove_armature" class="card tool-card">
@@ -749,6 +770,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">UUID or name of the armature to remove.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-update_armature" class="card tool-card">
@@ -798,6 +820,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Whether to export this armature.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-list_armature_bones" class="card tool-card">
@@ -827,6 +850,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Filter bones by armature UUID or name. If not provided, lists all bones.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-get_armature_bone" class="card tool-card">
@@ -861,6 +885,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Whether to include all vertex weights in response. <span class="param-meta">(default: <code>false</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-add_armature_bone" class="card tool-card">
@@ -925,6 +950,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Marker color index (0-7). <span class="param-meta">[min: 0, max: 7]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-remove_armature_bone" class="card tool-card">
@@ -959,6 +985,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Whether to also remove child bones. <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-update_armature_bone" class="card tool-card">
@@ -1033,6 +1060,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc"></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-update_armature_bones_batch" class="card tool-card">
@@ -1077,6 +1105,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc"> <span class="param-meta">[min: 0, max: 7]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-select_armature_bones" class="card tool-card">
@@ -1084,7 +1113,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <h3 class="card-name">select_armature_bones</h3>
         <div class="card-badges">
           <span class="badge badge-stable">stable</span>
-          
+
         </div>
       </div>
       <p class="card-title">Select Armature Bones</p>
@@ -1121,6 +1150,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Clear existing selection before selecting. <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-get_vertex_weights" class="card tool-card">
@@ -1155,6 +1185,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Filter weights by specific bone.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-set_vertex_weight" class="card tool-card">
@@ -1199,6 +1230,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Weight value (0-1). Set to 0 to remove weight. <span class="param-meta">[min: 0, max: 1]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-set_vertex_weights_batch" class="card tool-card">
@@ -1238,6 +1270,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Map of vertex_key -&gt; weight value.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-clear_vertex_weights" class="card tool-card">
@@ -1272,6 +1305,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">ID or name of the mesh. If not provided, uses selected mesh.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
         </section>
@@ -1304,6 +1338,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">ID or name of the element to remove.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-add_group" class="card tool-card">
@@ -1368,6 +1403,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc"> <span class="param-meta">(default: <code>false</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-list_outline" class="card tool-card">
@@ -1407,6 +1443,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Maximum tree depth to traverse. Use a small value to summarize large projects. <span class="param-meta">(default: <code>32</code>) [min: 1, max: 32]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-duplicate_element" class="card tool-card">
@@ -1446,6 +1483,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc"></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-rename_element" class="card tool-card">
@@ -1480,6 +1518,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">New name to assign.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-find_elements_by_criteria" class="card tool-card">
@@ -1544,6 +1583,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Maximum number of results to return. <span class="param-meta">(default: <code>200</code>) [min: 1, max: 1000]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-select_all_of_type" class="card tool-card">
@@ -1583,6 +1623,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">UUID or name of a parent group. If provided, only descendants of this group are selected.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-filter_by_material" class="card tool-card">
@@ -1617,6 +1658,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Include the list of cube face keys (e.g., 'north') that reference the texture. <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-get_selection" class="card tool-card">
@@ -1631,6 +1673,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <p class="card-desc">Returns the current selection state: selected cube/mesh/group UUIDs and names, plus the active texture. Use this to verify what `apply_texture` or a paint tool with `fill_mode=&quot;selected_elements&quot;` will target.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
+
       </div>
     </div>
         </section>
@@ -1660,9 +1703,10 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-name">only_current_format</td>
       <td class="col-type">boolean</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">If true, only return codecs compatible with the current project's format. <span class="param-meta">(default: <code>false</code>)</span></td>
+      <td class="col-desc">If true, return only the current format's own codec. Other compile-capable codecs may also export this model; false lists all codecs. <span class="param-meta">(default: <code>false</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-export_model" class="card tool-card">
@@ -1707,6 +1751,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Maximum number of characters to include in the returned `content` field. Use 0 to omit content entirely (useful when only writing to disk). Larger values risk exceeding MCP context limits. <span class="param-meta">(default: <code>100000</code>) [min: 0, max: 2000000]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
         </section>
@@ -1739,6 +1784,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Number of steps to undo. <span class="param-meta">(default: <code>1</code>) [min: 1, max: 100]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-redo" class="card tool-card">
@@ -1768,6 +1814,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Number of steps to redo. <span class="param-meta">(default: <code>1</code>) [min: 1, max: 100]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-get_undo_stack" class="card tool-card">
@@ -1797,6 +1844,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Maximum number of entries to return (most recent first). <span class="param-meta">(default: <code>50</code>) [min: 1, max: 200]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-save_checkpoint" class="card tool-card">
@@ -1804,7 +1852,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <h3 class="card-name">save_checkpoint</h3>
         <div class="card-badges">
           <span class="badge badge-stable">stable</span>
-          
+
         </div>
       </div>
       <p class="card-title">Save Checkpoint</p>
@@ -1826,6 +1874,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Descriptive name for the checkpoint. Shown in undo history so agents can navigate back to this point. <span class="param-meta">[minLength: 1, maxLength: 120]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
         </section>
@@ -1852,12 +1901,113 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         </tr>
       </thead>
       <tbody><tr>
+      <td class="col-name">include_preview</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Return the existing screenshot by default; false returns only created project metadata. <span class="param-meta">(default: <code>true</code>)</span></td>
+    </tr><tr>
       <td class="col-name">geojson</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
       <td class="col-desc">Path to the GeoJSON file or data URL, or the GeoJSON string itself.</td>
     </tr></tbody>
     </table>
+        <details><summary>Structured result</summary><table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">revision</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">format</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">name</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr></tbody>
+    </table></details>
+      </div>
+    </div>
+<div id="tool-open_project" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">open_project</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-openworld">open-world</span>
+        </div>
+      </div>
+      <p class="card-title">Open Project</p>
+      <p class="card-desc">Opens native .bbmodel data in a NEW isolated project, preserving existing tabs. Requires its model format to be installed. Returns project identity/revision; preview is opt-in. Use select_project to switch existing tabs and export_model with codec_id 'project' to save.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">bbmodel</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Native .bbmodel JSON, local path/file URL, application/json data URL or HTTP(S) URL; maximum 16 MiB.</td>
+    </tr><tr>
+      <td class="col-name">include_preview</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>false</code>)</span></td>
+    </tr></tbody>
+    </table>
+        <details><summary>Structured result</summary><table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">revision</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">format</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">name</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr></tbody>
+    </table></details>
       </div>
     </div>
         </section>
@@ -1895,6 +2045,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Specific faces to get/clear material instances for. If not provided, returns/clears all faces.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-set_face_material_instance" class="card tool-card">
@@ -1934,6 +2085,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Faces to set the material instance on. Defaults to all faces. <span class="param-meta">(default: <code>[&quot;north&quot;,&quot;south&quot;,&quot;east&quot;,&quot;west&quot;,&quot;up&quot;,&quot;down&quot;]</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-list_material_instances" class="card tool-card">
@@ -1948,6 +2100,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <p class="card-desc">Lists all unique material instance names used in the project. Returns the material instance names along with which cubes and faces use them.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
+
       </div>
     </div>
 <div id="tool-bulk_set_material_instances" class="card tool-card">
@@ -1977,6 +2130,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Array of material instance assignments. <span class="param-meta">[minItems: 1]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-clear_material_instances" class="card tool-card">
@@ -2016,6 +2170,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">If true, clears material instances from all cubes in the project. <span class="param-meta">(default: <code>false</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
         </section>
@@ -2058,6 +2213,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Group/bone to which the mesh belongs.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-extrude_mesh" class="card tool-card">
@@ -2097,6 +2253,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">What to extrude: faces, edges, or vertices. <span class="param-meta">(default: <code>&quot;faces&quot;</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-subdivide_mesh" class="card tool-card">
@@ -2131,6 +2288,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Number of subdivision cuts to make. <span class="param-meta">(default: <code>1</code>) [min: 1, max: 10]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-create_sphere" class="card tool-card">
@@ -2170,6 +2328,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Group/bone to which the sphere belongs.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-select_mesh_elements" class="card tool-card">
@@ -2204,7 +2363,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Selection mode.</td>
     </tr><tr>
       <td class="col-name">elements</td>
-      <td class="col-type">string,number[]</td>
+      <td class="col-type">string | number[]</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Specific elements to select. If not provided, selects all.</td>
     </tr><tr>
@@ -2214,6 +2373,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Selection action: select (replace), add, remove, or toggle. <span class="param-meta">(default: <code>&quot;select&quot;</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-move_mesh_vertices" class="card tool-card">
@@ -2253,6 +2413,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Specific vertex keys to move. If not provided, moves all selected vertices.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-delete_mesh_elements" class="card tool-card">
@@ -2292,6 +2453,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">When deleting faces/edges, whether to keep the vertices. <span class="param-meta">(default: <code>false</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-merge_mesh_vertices" class="card tool-card">
@@ -2331,6 +2493,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Whether to only merge selected vertices. <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-create_mesh_face" class="card tool-card">
@@ -2370,6 +2533,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Texture ID or name to apply to the new face.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-create_cylinder" class="card tool-card">
@@ -2409,6 +2573,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Group/bone ID or name.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-knife_tool" class="card tool-card">
@@ -2443,6 +2608,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Points defining the cut path. <span class="param-meta">[minItems: 2]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
         </section>
@@ -2510,6 +2676,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Fill blend mode.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-draw_shape_tool" class="card tool-card">
@@ -2574,6 +2741,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Shape blend mode.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-gradient_tool" class="card tool-card">
@@ -2633,6 +2801,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Gradient blend mode.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-color_picker_tool" class="card tool-card">
@@ -2640,7 +2809,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <h3 class="card-name">color_picker_tool</h3>
         <div class="card-badges">
           <span class="badge badge-stable">stable</span>
-          <span class="badge badge-readonly">read-only</span>
+
         </div>
       </div>
       <p class="card-title">Color Picker Tool</p>
@@ -2682,6 +2851,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Also pick and apply the pixel's opacity. <span class="param-meta">(default: <code>false</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-copy_brush_tool" class="card tool-card">
@@ -2736,6 +2906,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Copy brush mode. <span class="param-meta">(default: <code>&quot;copy&quot;</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-eraser_tool" class="card tool-card">
@@ -2795,6 +2966,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Whether to connect erase strokes with lines. <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-paint_settings" class="card tool-card">
@@ -2869,6 +3041,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Pick combined layer colors.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-paint_with_brush" class="card tool-card">
@@ -2913,6 +3086,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Whether to connect paint strokes with lines. <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-create_brush_preset" class="card tool-card">
@@ -2977,6 +3151,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Enable pixel perfect drawing.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-load_brush_preset" class="card tool-card">
@@ -3006,6 +3181,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Name of the brush preset to load.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-texture_selection" class="card tool-card">
@@ -3055,6 +3231,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Selection mode. <span class="param-meta">(default: <code>&quot;create&quot;</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-texture_layer_management" class="card tool-card">
@@ -3093,6 +3270,11 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Name of the layer.</td>
     </tr><tr>
+      <td class="col-name">layer_id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Exact layer UUID or unique name on the requested texture; defaults to its selected layer. Inspect IDs with query_model kind texture_layers.</td>
+    </tr><tr>
       <td class="col-name">opacity</td>
       <td class="col-type">number</td>
       <td><span class="param-optional">optional</span></td>
@@ -3109,6 +3291,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Target position for moving layers.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
         </section>
@@ -3146,6 +3329,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Project format ID from Blockbench's Formats registry. <span class="param-meta">(default: <code>&quot;bedrock_block&quot;</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-get_project_info" class="card tool-card">
@@ -3160,6 +3344,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <p class="card-desc">Returns read-only project orientation: format id and display name, project name/UUID, texture resolution (texture_width/height), element counts, and a summary of top-level groups. Prefer this over `risky_eval` for first-look inspection — no JavaScript execution required.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
+
       </div>
     </div>
         </section>
@@ -3190,6 +3375,11 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
       <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">include_preview</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Return the existing texture image by default; false returns only metadata and UUIDs. <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr><tr>
       <td class="col-name">width</td>
       <td class="col-type">integer</td>
@@ -3237,6 +3427,47 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Render sides for the texture. Auto, front, or double. <span class="param-meta">(default: <code>&quot;auto&quot;</code>)</span></td>
     </tr></tbody>
     </table>
+        <details><summary>Structured result</summary><table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">revision</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">texture_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">width</td>
+      <td class="col-type">number</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">height</td>
+      <td class="col-type">number</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">layer_ids</td>
+      <td class="col-type">string[]</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr></tbody>
+    </table></details>
       </div>
     </div>
 <div id="tool-apply_texture" class="card tool-card">
@@ -3276,6 +3507,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Apply texture to element or group. <span class="param-meta">(default: <code>&quot;blank&quot;</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-add_texture_group" class="card tool-card">
@@ -3315,6 +3547,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Whether the texture group is a PBR material or not. <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-list_textures" class="card tool-card">
@@ -3329,6 +3562,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <p class="card-desc">Returns a list of all textures in the Blockbench editor.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
+
       </div>
     </div>
 <div id="tool-get_texture" class="card tool-card">
@@ -3358,6 +3592,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Texture ID or name. If not provided, uses selected texture.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-create_pbr_material" class="card tool-card">
@@ -3422,6 +3657,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Subsurface scattering value (0-255) for Bedrock 1.21.30+ materials. <span class="param-meta">[min: 0, max: 255]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-configure_material" class="card tool-card">
@@ -3486,6 +3722,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Subsurface scattering value (0-255). <span class="param-meta">[min: 0, max: 255]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-list_materials" class="card tool-card">
@@ -3500,6 +3737,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <p class="card-desc">Lists all PBR materials (texture groups with is_material=true) and their assigned textures per channel.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
+
       </div>
     </div>
 <div id="tool-get_material_info" class="card tool-card">
@@ -3529,6 +3767,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Material name or UUID.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-import_texture_set" class="card tool-card">
@@ -3558,6 +3797,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Path to the .texture_set.json file to import.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-assign_texture_channel" class="card tool-card">
@@ -3597,6 +3837,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">PBR channel to assign the texture to.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-save_material_config" class="card tool-card">
@@ -3626,6 +3867,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Material name or UUID to save.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-activate_texture" class="card tool-card">
@@ -3633,7 +3875,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <h3 class="card-name">activate_texture</h3>
         <div class="card-badges">
           <span class="badge badge-stable">stable</span>
-          
+
         </div>
       </div>
       <p class="card-title">Activate Texture</p>
@@ -3655,6 +3897,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Texture ID, UUID, or name to activate in the texture panel.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
         </section>
@@ -3697,6 +3940,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Stringified form of event arguments.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-risky_eval" class="card tool-card">
@@ -3726,6 +3970,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">JavaScript code to evaluate. Do not pass `console` commands or comments.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-emulate_clicks" class="card tool-card">
@@ -3760,6 +4005,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Drag options. If set, will perform a drag from position to 'to'.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-fill_dialog" class="card tool-card">
@@ -3794,6 +4040,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Whether to confirm or cancel the dialog after filling it. True to confirm, false to cancel. <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
         </section>
@@ -3836,6 +4083,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">UV coordinates for each vertex of the face.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-auto_uv_mesh" class="card tool-card">
@@ -3875,6 +4123,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Specific face keys to UV map. If not provided, maps all selected faces.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-rotate_mesh_uv" class="card tool-card">
@@ -3914,6 +4163,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Specific face keys to rotate UV for. If not provided, rotates all selected faces.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
         </section>
@@ -3931,6 +4181,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <p class="card-desc">Returns information about the current Hytale format. Requires the Hytale plugin and a Hytale format project to be active.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
+
       </div>
     </div>
 <div id="tool-hytale_validate_model" class="card tool-card">
@@ -3945,6 +4196,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <p class="card-desc">Validates the current Hytale model against Hytale engine constraints (node count, UV sizes, etc.).</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
+
       </div>
     </div>
 <div id="tool-hytale_set_cube_properties" class="card tool-card">
@@ -3952,7 +4204,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <h3 class="card-name">hytale_set_cube_properties</h3>
         <div class="card-badges">
           <span class="badge badge-experimental">experimental</span>
-          
+
         </div>
       </div>
       <p class="card-title">Set Hytale Cube Properties</p>
@@ -3984,6 +4236,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Whether to render both sides of faces</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-hytale_get_cube_properties" class="card tool-card">
@@ -4013,6 +4266,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">ID or name of the cube. If not provided, uses selected cube.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-hytale_create_quad" class="card tool-card">
@@ -4020,7 +4274,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <h3 class="card-name">hytale_create_quad</h3>
         <div class="card-badges">
           <span class="badge badge-experimental">experimental</span>
-          
+
         </div>
       </div>
       <p class="card-title">Create Hytale Quad</p>
@@ -4067,6 +4321,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Whether to render both sides <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-hytale_list_attachments" class="card tool-card">
@@ -4081,6 +4336,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <p class="card-desc">Lists all attachment collections in the current Hytale project.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
+
       </div>
     </div>
 <div id="tool-hytale_set_attachment_piece" class="card tool-card">
@@ -4088,7 +4344,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <h3 class="card-name">hytale_set_attachment_piece</h3>
         <div class="card-badges">
           <span class="badge badge-experimental">experimental</span>
-          
+
         </div>
       </div>
       <p class="card-title">Set Attachment Piece</p>
@@ -4115,6 +4371,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Whether the group is an attachment piece</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-hytale_list_attachment_pieces" class="card tool-card">
@@ -4129,6 +4386,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <p class="card-desc">Lists all groups marked as attachment pieces.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
+
       </div>
     </div>
 <div id="tool-hytale_create_visibility_keyframe" class="card tool-card">
@@ -4136,7 +4394,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <h3 class="card-name">hytale_create_visibility_keyframe</h3>
         <div class="card-badges">
           <span class="badge badge-experimental">experimental</span>
-          
+
         </div>
       </div>
       <p class="card-title">Create Visibility Keyframe</p>
@@ -4173,6 +4431,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Animation UUID or name. If not provided, uses current animation.</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-hytale_set_animation_loop" class="card tool-card">
@@ -4180,7 +4439,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <h3 class="card-name">hytale_set_animation_loop</h3>
         <div class="card-badges">
           <span class="badge badge-experimental">experimental</span>
-          
+
         </div>
       </div>
       <p class="card-title">Set Animation Loop Mode</p>
@@ -4207,6 +4466,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Loop mode: loop (continuous), hold (freeze on last frame), once (play once)</td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-hytale_set_cube_stretch" class="card tool-card">
@@ -4214,7 +4474,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <h3 class="card-name">hytale_set_cube_stretch</h3>
         <div class="card-badges">
           <span class="badge badge-experimental">experimental</span>
-          
+
         </div>
       </div>
       <p class="card-title">Set Cube Stretch</p>
@@ -4241,6 +4501,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">Stretch values [x, y, z]. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
     </tr></tbody>
     </table>
+
       </div>
     </div>
 <div id="tool-hytale_get_cube_stretch" class="card tool-card">
@@ -4270,6 +4531,495 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-desc">ID or name of the cube. If not provided, uses selected cube.</td>
     </tr></tbody>
     </table>
+
+      </div>
+    </div>
+        </section>
+<section id="cat-model-workflows" class="category-section">
+          <h3 class="category-title">Model Workflows</h3>
+          <div id="tool-get_project_capabilities" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">get_project_capabilities</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-readonly">read-only</span>
+        </div>
+      </div>
+
+      <p class="card-desc">Returns native format capabilities, available formats, project revision and exact plugin build identity. Use before choosing geometry/animation tools.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Project UUID; defaults to the active project for reads. <span class="param-meta">[maxLength: 128]</span></td>
+    </tr></tbody>
+    </table>
+        <details><summary>Structured result</summary><table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">revision</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">plugin</td>
+      <td class="col-type">Record&lt;string, unknown&gt;</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">format</td>
+      <td class="col-type">Record&lt;string, unknown&gt;</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">formats</td>
+      <td class="col-type">Record&lt;string, unknown&gt;[]</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr></tbody>
+    </table></details>
+      </div>
+    </div>
+<div id="tool-query_model" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">query_model</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-readonly">read-only</span>
+        </div>
+      </div>
+
+      <p class="card-desc">Reads compact pages of project elements, textures, animations, mesh vertices/faces or texture layers. No bitmap/render graphs. Pages have a 16 KiB item budget; reuse next_cursor with identical filters. Editing invalidates cursors.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Project UUID; defaults to the active project for reads. <span class="param-meta">[maxLength: 128]</span></td>
+    </tr><tr>
+      <td class="col-name">kind</td>
+      <td class="col-type">&quot;elements&quot; | &quot;textures&quot; | &quot;animations&quot; | &quot;mesh_vertices&quot; | &quot;mesh_faces&quot; | &quot;texture_layers&quot;</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>&quot;elements&quot;</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">owner_id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Mesh or texture UUID/unique name for components or layers. <span class="param-meta">[maxLength: 128]</span></td>
+    </tr><tr>
+      <td class="col-name">type</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Exact element type, e.g. cube, group, mesh, armature_bone. <span class="param-meta">[maxLength: 64]</span></td>
+    </tr><tr>
+      <td class="col-name">name_contains</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Literal case-insensitive name filter; no regex. <span class="param-meta">[maxLength: 256]</span></td>
+    </tr><tr>
+      <td class="col-name">parent_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Direct parent UUID, or root. <span class="param-meta">[maxLength: 128]</span></td>
+    </tr><tr>
+      <td class="col-name">include_transform</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>false</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">limit</td>
+      <td class="col-type">integer</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>25</code>) [min: 1, max: 100]</span></td>
+    </tr><tr>
+      <td class="col-name">cursor</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">[maxLength: 4096]</span></td>
+    </tr></tbody>
+    </table>
+        <details><summary>Structured result</summary><table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">revision</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">items</td>
+      <td class="col-type">Record&lt;string, unknown&gt;[]</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">total</td>
+      <td class="col-type">number</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">next_cursor</td>
+      <td class="col-type">string | null</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr></tbody>
+    </table></details>
+      </div>
+    </div>
+<div id="tool-get_element" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">get_element</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-readonly">read-only</span>
+        </div>
+      </div>
+
+      <p class="card-desc">Reads one element's identity, transform, counts and bounded child IDs. Use query_model for full mesh geometry or additional children; avoids raw nodes:// rendering graphs.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Project UUID; defaults to the active project for reads. <span class="param-meta">[maxLength: 128]</span></td>
+    </tr><tr>
+      <td class="col-name">id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"> <span class="param-meta">[maxLength: 256]</span></td>
+    </tr><tr>
+      <td class="col-name">child_limit</td>
+      <td class="col-type">integer</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>20</code>) [min: 0, max: 100]</span></td>
+    </tr></tbody>
+    </table>
+        <details><summary>Structured result</summary><table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">revision</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">element</td>
+      <td class="col-type">Record&lt;string, unknown&gt;</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr></tbody>
+    </table></details>
+      </div>
+    </div>
+<div id="tool-validate_model" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">validate_model</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-readonly">read-only</span>
+        </div>
+      </div>
+
+      <p class="card-desc">Runs native validation for the active project, waits for completion and returns a bounded problem page with check IDs. A cursor reads the completed validation snapshot; model edits invalidate it.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">severity</td>
+      <td class="col-type">&quot;all&quot; | &quot;error&quot; | &quot;warning&quot;</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>&quot;all&quot;</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">limit</td>
+      <td class="col-type">integer</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>25</code>) [min: 1, max: 100]</span></td>
+    </tr><tr>
+      <td class="col-name">cursor</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">[maxLength: 4096]</span></td>
+    </tr></tbody>
+    </table>
+        <details><summary>Structured result</summary><table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">revision</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">items</td>
+      <td class="col-type">Record&lt;string, unknown&gt;[]</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">total</td>
+      <td class="col-type">number</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">next_cursor</td>
+      <td class="col-type">string | null</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">validated_at</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr></tbody>
+    </table></details>
+      </div>
+    </div>
+<div id="tool-select_project" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">select_project</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+
+        </div>
+      </div>
+
+      <p class="card-desc">Activates an existing project by UUID without closing others. Returns the active identity and revision; finish pending editor operations first.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr></tbody>
+    </table>
+        <details><summary>Structured result</summary><table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">revision</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr></tbody>
+    </table></details>
+      </div>
+    </div>
+<div id="tool-apply_model_batch" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">apply_model_batch</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-destructive">destructive</span>
+        </div>
+      </div>
+
+      <p class="card-desc">Creates groups, cubes and complete meshes with faces/UVs, patches or removes elements in ONE native Undo edit. All targets validate first; failure rolls back. Parent '@ref' addresses a group in this batch (forward references allowed); otherwise use root or an existing UUID/unique name. Mesh vertex keys are local aliases. No implicit screenshot. Active project_uuid required.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">expected_revision</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Revision from inspection; fails before mutation if the project changed.</td>
+    </tr><tr>
+      <td class="col-name">operation_id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Retry key. Identical requests replay the original result for 10 minutes; changed arguments with the same key fail. <span class="param-meta">[minLength: 1, maxLength: 128]</span></td>
+    </tr><tr>
+      <td class="col-name">label</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>&quot;Agent model batch&quot;</code>) [minLength: 1, maxLength: 100]</span></td>
+    </tr><tr>
+      <td class="col-name">groups</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>) [maxItems: 256]</span></td>
+    </tr><tr>
+      <td class="col-name">cubes</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>) [maxItems: 256]</span></td>
+    </tr><tr>
+      <td class="col-name">meshes</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>) [maxItems: 32]</span></td>
+    </tr><tr>
+      <td class="col-name">patches</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>) [maxItems: 256]</span></td>
+    </tr><tr>
+      <td class="col-name">remove</td>
+      <td class="col-type">string[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>) [maxItems: 256]</span></td>
+    </tr></tbody>
+    </table>
+        <details><summary>Structured result</summary><table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">project_uuid</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">revision</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">created</td>
+      <td class="col-type">Record&lt;string, string&gt;</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">patched</td>
+      <td class="col-type">string[]</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">removed</td>
+      <td class="col-type">string[]</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Removed root UUIDs; descendants are counted without expanding the result.</td>
+    </tr><tr>
+      <td class="col-name">removed_count</td>
+      <td class="col-type">number</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">replayed</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr></tbody>
+    </table></details>
       </div>
     </div>
         </section>
@@ -4282,18 +5032,18 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <h3 class="card-name">blockbench_native_apis</h3>
         <div class="card-badges"><span class="badge badge-stable">stable</span></div>
       </div>
-      
-      <p class="card-desc">Essential information about Blockbench v5.0 native API security model and requireNativeModule() usage. Use this when working with Node.js modules, file system access, or native APIs in Blockbench plugins.</p>
-      <div class="overflow-x"><p class="empty-params">No arguments</p></div>
+
+      <p class="card-desc">Concise native module and permission reference for Blockbench 5.1.6 plugin code.</p>
+      <div class="overflow-x"><p class="empty-params">No parameters</p></div>
     </div>
 <div class="card">
       <div class="card-header">
         <h3 class="card-name">blockbench_code_eval_safety</h3>
         <div class="card-badges"><span class="badge badge-stable">stable</span></div>
       </div>
-      
-      <p class="card-desc">Critical safety guide for agents using code evaluation/execution tools with Blockbench v5.0+. Contains breaking changes, quick reference, common mistakes, and safe code patterns for native module usage.</p>
-      <div class="overflow-x"><p class="empty-params">No arguments</p></div>
+
+      <p class="card-desc">Execution contract, state checks and Undo requirements for the risky_eval escape hatch.</p>
+      <div class="overflow-x"><p class="empty-params">No parameters</p></div>
     </div>
 <div class="card">
       <div class="card-header">
@@ -4301,7 +5051,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <div class="card-badges"><span class="badge badge-stable">stable</span></div>
       </div>
       <p class="card-title">Model Creation Strategy</p>
-      <p class="card-desc">A strategy for creating a new 3D model in Blockbench.</p>
+      <p class="card-desc">Efficient native modeling workflow with optional format and approach guidance.</p>
       <div class="overflow-x"><table class="param-table">
       <thead>
         <tr>
@@ -4313,14 +5063,14 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       </thead>
       <tbody><tr>
       <td class="col-name">format</td>
-      <td class="col-type">&quot;java_block&quot; | &quot;bedrock&quot;</td>
+      <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Target model format.</td>
+      <td class="col-desc">Native format ID; inspect get_project_capabilities for available formats.</td>
     </tr><tr>
       <td class="col-name">approach</td>
-      <td class="col-type">&quot;ui&quot; | &quot;programmatic&quot; | &quot;import&quot;</td>
+      <td class="col-type">&quot;ui&quot; | &quot;programmatic&quot; | &quot;import&quot; | &quot;geometry&quot;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Creation approach to use.</td>
+      <td class="col-desc"></td>
     </tr></tbody>
     </table></div>
     </div>
@@ -4330,7 +5080,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <div class="card-badges"><span class="badge badge-experimental">experimental</span></div>
       </div>
       <p class="card-title">Hytale Model Creation Guide</p>
-      <p class="card-desc">Comprehensive guide for creating Hytale character and prop models. Covers format selection, node limits, shading modes, stretch, quads, and best practices.</p>
+      <p class="card-desc">Format-aware Hytale modeling workflow; requires the optional Hytale plugin.</p>
       <div class="overflow-x"><table class="param-table">
       <thead>
         <tr>
@@ -4344,7 +5094,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-name">format_type</td>
       <td class="col-type">&quot;character&quot; | &quot;prop&quot; | &quot;both&quot;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Which format type to focus on. <span class="param-meta">(default: <code>&quot;both&quot;</code>)</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>&quot;both&quot;</code>)</span></td>
     </tr></tbody>
     </table></div>
     </div>
@@ -4354,7 +5104,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <div class="card-badges"><span class="badge badge-experimental">experimental</span></div>
       </div>
       <p class="card-title">Hytale Animation Workflow</p>
-      <p class="card-desc">Guide for creating animations for Hytale models. Covers 60 FPS timing, quaternion rotations, visibility keyframes, loop modes, and common animation patterns.</p>
+      <p class="card-desc">Native Hytale animation workflow and schema-compatible keyframe guidance.</p>
       <div class="overflow-x"><table class="param-table">
       <thead>
         <tr>
@@ -4368,7 +5118,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       <td class="col-name">animation_type</td>
       <td class="col-type">&quot;walk&quot; | &quot;idle&quot; | &quot;attack&quot; | &quot;general&quot;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Type of animation to focus on. <span class="param-meta">(default: <code>&quot;general&quot;</code>)</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>&quot;general&quot;</code>)</span></td>
     </tr></tbody>
     </table></div>
     </div>
@@ -4378,14 +5128,54 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
         <div class="card-badges"><span class="badge badge-experimental">experimental</span></div>
       </div>
       <p class="card-title">Hytale Attachments System</p>
-      <p class="card-desc">Guide for creating and managing attachments in Hytale models. Covers attachment collections, piece bones, modular equipment, and best practices.</p>
-      <div class="overflow-x"><p class="empty-params">No arguments</p></div>
+      <p class="card-desc">Discover and configure Hytale attachments and pieces using registered resources.</p>
+      <div class="overflow-x"><p class="empty-params">No parameters</p></div>
     </div>
       </section>
 
       <section id="resources" class="doc-section">
         <h2 class="section-title">Resources</h2>
         <div class="card">
+      <div class="card-header">
+        <h3 class="card-name">model-element</h3>
+      </div>
+      <p class="card-title">Compact model element</p>
+      <p class="uri-template">model://{project}/elements/{id}</p>
+      <p class="card-desc">Project-scoped element identity, transform and counts. No render graph or recursive children. Use query_model for geometry pages.</p>
+    </div>
+<div class="card">
+      <div class="card-header">
+        <h3 class="card-name">model-texture</h3>
+      </div>
+      <p class="card-title">Texture metadata</p>
+      <p class="uri-template">model://{project}/textures/{id}</p>
+      <p class="card-desc">Project-scoped texture dimensions, channel and layer count without bitmap data.</p>
+    </div>
+<div class="card">
+      <div class="card-header">
+        <h3 class="card-name">hytale-attachments-collection</h3>
+      </div>
+      <p class="card-title">Hytale attachments collection</p>
+      <p class="uri-template">hytale://attachments</p>
+      <p class="card-desc">Lists attachments in the current Hytale project. Requires the Hytale plugin.</p>
+    </div>
+<div class="card">
+      <div class="card-header">
+        <h3 class="card-name">hytale-pieces-collection</h3>
+      </div>
+      <p class="card-title">Hytale pieces collection</p>
+      <p class="uri-template">hytale://pieces</p>
+      <p class="card-desc">Lists pieces in the current Hytale project. Requires the Hytale plugin.</p>
+    </div>
+<div class="card">
+      <div class="card-header">
+        <h3 class="card-name">hytale-cubes-collection</h3>
+      </div>
+      <p class="card-title">Hytale cubes collection</p>
+      <p class="uri-template">hytale://cubes</p>
+      <p class="card-desc">Lists cubes in the current Hytale project. Requires the Hytale plugin.</p>
+    </div>
+<div class="card">
       <div class="card-header">
         <h3 class="card-name">projects-collection</h3>
       </div>
@@ -4516,7 +5306,7 @@ The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
       </section>
 
       <footer class="page-footer">
-        Generated 2026-09-03T03:24:04.996Z from Zod schemas
+        Generated 2026-09-03T05:16:06.789Z from Zod schemas
       </footer>
     </main>
   </div>
