@@ -99,6 +99,13 @@ export function setBarItemValue(id: string, value: unknown): void {
   // @ts-ignore - BarItems is a Blockbench global
   const item = BarItems?.[id];
   if (!item) return;
+  // NumSlider stores per-tool values through setValue. Assigning .value then
+  // calling update() reloads the old tool setting and silently loses the input.
+  const slider = item as typeof item & { setValue?: (value: unknown) => void };
+  if (typeof slider.setValue === "function") {
+    slider.setValue(value);
+    return;
+  }
   if (typeof item.set === "function") {
     try {
       item.set(value);

@@ -12,9 +12,14 @@ export function resolveMaterialChannels(channels: Record<MaterialChannel, string
 /** Detach replaced textures, preserving their data and channel for later reuse. */
 export function assignMaterialChannel(group: TextureGroup, texture: Texture | undefined, channel: MaterialChannel) {
   for (const previous of group.getTextures()) {
-    if (previous.pbr_channel === channel && previous !== texture) previous.extend({ group: "" });
+    if (previous.pbr_channel === channel && previous !== texture) previous.group = "";
   }
-  texture?.extend({ group: group.uuid, pbr_channel: channel });
+  // Texture.extend in 5.1.6 calls layers.find(selected_layer) when a layer is
+  // selected. These plain Property fields need no layer reconstruction.
+  if (texture) {
+    texture.group = group.uuid;
+    texture.pbr_channel = channel;
+  }
 }
 
 export function refreshMaterials(groups: TextureGroup[]) {

@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { findElementOrThrow } from "@/lib/util";
-import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { STATUS_STABLE } from "@/lib/constants";
 import { faceEnum, cubeIdOptionalSchema, cubeIdSchema } from "@/lib/zodObjects";
 
 // ============================================================================
@@ -115,7 +115,7 @@ export const materialInstanceToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: setFaceMaterialInstanceParametersSchema,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "list_material_instances",
@@ -137,7 +137,7 @@ export const materialInstanceToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: bulkSetMaterialInstancesParametersSchema,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "clear_material_instances",
@@ -148,7 +148,7 @@ export const materialInstanceToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: clearMaterialInstancesParametersSchema,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
 ];
 
@@ -242,7 +242,7 @@ export function registerMaterialInstanceTools() {
         const materialMap: Record<
           string,
           Array<{ cube_name: string; cube_uuid: string; face: string }>
-        > = {};
+        > = Object.create(null);
 
         for (const cube of Cube.all) {
           for (const faceDir of faceEnum.options) {
@@ -282,15 +282,15 @@ export function registerMaterialInstanceTools() {
     {
       ...materialInstanceToolDocs[3],
       async execute({ assignments }) {
-        const cubeCache: Record<string, Cube> = {};
+        const cubeCache = new Map<string, Cube>();
         const cubesToEdit: Cube[] = [];
 
         // Validate and cache cubes
         for (const assignment of assignments) {
-          if (!cubeCache[assignment.cube_id]) {
+          if (!cubeCache.has(assignment.cube_id)) {
             const cube = findCubeOrThrow(assignment.cube_id);
-            cubeCache[assignment.cube_id] = cube;
-            cubesToEdit.push(cube);
+            cubeCache.set(assignment.cube_id, cube);
+            if (!cubesToEdit.includes(cube)) cubesToEdit.push(cube);
           }
         }
 
@@ -303,7 +303,7 @@ export function registerMaterialInstanceTools() {
         let totalModified = 0;
 
         for (const assignment of assignments) {
-          const cube = cubeCache[assignment.cube_id];
+          const cube = cubeCache.get(assignment.cube_id)!;
           for (const faceDir of assignment.faces) {
             const face = cube.faces[faceDir];
             if (face) {

@@ -5,7 +5,7 @@ import { getAnimationClass } from "@/lib/animation";
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { findElementOrThrow, findTextureOrThrow } from "@/lib/util";
-import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { STATUS_STABLE } from "@/lib/constants";
 import {
   elementIdSchema,
   vector3Schema,
@@ -149,7 +149,7 @@ export const elementToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: removeElementParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "add_group",
@@ -178,14 +178,14 @@ export const elementToolDocs: ToolSpec[] = [
       "Duplicates a cube, mesh or group by ID or name.  You may offset the duplicate or assign a new name.",
     annotations: { title: "Duplicate Element", destructiveHint: true },
     parameters: duplicateElementParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "rename_element",
     description: "Renames a cube, mesh or group by ID or name.",
     annotations: { title: "Rename Element", destructiveHint: true },
     parameters: renameElementParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "find_elements_by_criteria",
@@ -327,13 +327,14 @@ export function registerElementTools() {
 
       Undo.initEdit({
         elements: elementTree(element),
+        groups: outlinerTree(element).filter((node): node is Group => node instanceof Group),
         outliner: true,
         animations: Animation.all,
       });
 
       element.remove();
 
-      Undo.finishEdit("Agent removed element", { elements: [], outliner: true, animations: Animation.all });
+      Undo.finishEdit("Agent removed element", { elements: [], groups: [], outliner: true, animations: Animation.all });
       Canvas.updateAll();
 
       return `Removed element with ID ${id}`;
@@ -354,6 +355,7 @@ export function registerElementTools() {
     }) {
       Undo.initEdit({
         elements: [],
+        groups: [],
         outliner: true,
         collections: [],
       });
@@ -374,7 +376,7 @@ export function registerElementTools() {
           getAllGroups().find((g: Group) => g.name === parent || g.uuid === parent);
       group.addTo(parentGroup);
 
-      Undo.finishEdit("Agent added group");
+      Undo.finishEdit("Agent added group", { elements: [], groups: [group], outliner: true });
       Canvas.updateAll();
 
       return `Added group ${group.name} with ID ${group.uuid}`;
@@ -454,7 +456,8 @@ export function registerElementTools() {
         throw new Error("Duplication supports cubes, meshes and groups.");
       }
       const before = new Set(Outliner.elements);
-      Undo.initEdit({ elements: [], outliner: true });
+      const groupsBefore = new Set(Group.all);
+      Undo.initEdit({ elements: [], groups: [], outliner: true });
       let dup: typeof element;
       try {
         dup = (element as unknown as { duplicate(): Cube | Mesh | Group }).duplicate();
@@ -468,9 +471,10 @@ export function registerElementTools() {
             node.origin = node.origin.map((v, i) => v + offset[i]) as ArrayVector3;
           }
         }
-        Undo.finishEdit("Agent duplicated element", { elements: elementTree(dup), outliner: true });
+        Undo.finishEdit("Agent duplicated element", { elements: elementTree(dup), groups: outlinerTree(dup).filter((node): node is Group => node instanceof Group), outliner: true });
       } catch (error) {
         for (const node of [...Outliner.elements]) if (!before.has(node)) node.remove();
+        for (const group of [...Group.all]) if (!groupsBefore.has(group)) group.remove();
         Undo.cancelEdit();
         throw error;
       }
@@ -487,7 +491,7 @@ export function registerElementTools() {
     ...elementToolDocs[4],
     async execute({ id, new_name }) {
       const element = findElementOrThrow(id);
-      Undo.initEdit({ elements: [element], outliner: true, collections: [] });
+      Undo.initEdit({ elements: element instanceof Group ? [] : [element], groups: element instanceof Group ? [element] : [], outliner: true });
       element.extend({ name: new_name });
       Undo.finishEdit("Agent renamed element");
       Canvas.updateAll();

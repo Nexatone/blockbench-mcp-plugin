@@ -2,7 +2,7 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { STATUS_STABLE } from "@/lib/constants";
 
 export const listExportFormatsParameters = z.object({
   only_current_format: z
@@ -67,7 +67,7 @@ export const exportToolDocs: ToolSpec[] = [
       openWorldHint: true,
     },
     parameters: exportModelParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
 ];
 

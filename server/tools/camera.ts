@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { captureScreenshot, captureAppScreenshot } from "@/lib/util";
-import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { STATUS_STABLE } from "@/lib/constants";
 import { vector3Schema, projectionEnum } from "@/lib/zodObjects";
 
 export const captureScreenshotParameters = z.object({
@@ -42,13 +42,13 @@ export const cameraToolDocs: ToolSpec[] = [
   },
   {
     name: "set_camera_angle",
-    description: "Sets the camera angle to the specified value.",
+    description: "Sets the selected preview camera and returns a viewport screenshot. Position and target use model units; rotation uses degrees in ZYX order. Target takes precedence over rotation. Projection 'unset' preserves the current projection. Changes editor view state, without creating a model Undo entry.",
     annotations: {
       title: "Set Camera Angle",
       destructiveHint: true,
     },
     parameters: setCameraAngleParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
 ];
 

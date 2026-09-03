@@ -1,4 +1,4 @@
-import { axes, keyframeValues, setKeyframeValues, addAnimationKeyframe, handleVector, bakeTimes, MAX_BAKED_KEYFRAMES, getAnimationClass } from "@/lib/animation";
+import { axes, keyframeValues, setKeyframeValues, addAnimationKeyframe, handleVector, bakeTimes, MAX_BAKED_KEYFRAMES, getAnimationClass, selectAnimationKeyframes } from "@/lib/animation";
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { z } from "zod";
@@ -17,6 +17,11 @@ import {
   loopModeEnum,
   keyframeDataSchema,
 } from "@/lib/zodObjects";
+
+// Detached native keyframe copies retain Molang, pre/post values and handles.
+// Kept inside the plugin; reload clears this transient clipboard.
+type CopiedKeyframe = ReturnType<_Keyframe["getUndoCopy"]> & { time: number };
+let animationClipboard: Record<string, CopiedKeyframe[]> | null = null;
 
 export const createAnimationParameters = z.object({
   name: z.string().describe("Name of the animation"),
@@ -62,7 +67,7 @@ export const animationGraphEditorParameters = z.object({
   animation_id: animationIdOptionalSchema,
   bone_name: boneNameSchema.describe("Name of the bone/group to modify curves for."),
   channel: animationChannelEnum.describe("Animation channel to modify."),
-  axis: axisWithAllEnum.default("all").describe("Axis to modify curves for."),
+  axis: axisWithAllEnum.default("all").describe("Axes for generated Bezier handles. Native interpolation type is shared by all axes of each keyframe."),
   action: z
     .enum([
       "smooth",
@@ -84,11 +89,11 @@ export const animationGraphEditorParameters = z.object({
       control_point_1: z
         .array(z.number())
         .length(2)
-        .describe("First control point [time, value]."),
+        .describe("First normalized control point [time, value]; time must be 0–1. Values may overshoot."),
       control_point_2: z
         .array(z.number())
         .length(2)
-        .describe("Second control point [time, value]."),
+        .describe("Second normalized control point [time, value]; time must be 0–1. Values may overshoot."),
     })
     .optional()
     .describe(
@@ -167,7 +172,7 @@ export const batchKeyframeOperationsParameters = z.object({
   selection: z
     .enum(["all", "selected", "range", "pattern"])
     .default("selected")
-    .describe("Which keyframes to operate on."),
+    .describe("Selection within the active animation, including collapsed/hidden animators. Selected uses its currently selected keys."),
   range: timeRangeSchema.optional().describe("Time range for keyframe selection."),
   pattern: z
     .object({
@@ -190,7 +195,7 @@ export const batchKeyframeOperationsParameters = z.object({
       scale_factor: z
         .number()
         .optional()
-        .describe("Scale factor for time or values."),
+        .describe("Positive time scale factor. Scales Bezier time handles too; use reverse for time reversal."),
       scale_pivot: z
         .number()
         .optional()
@@ -267,18 +272,18 @@ export const animationToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: manageKeyframesParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "animation_graph_editor",
     description:
-      "Controls animation curves in the graph editor for fine-tuning animations.",
+      "Controls native keyframe interpolation. Interpolation type applies to all axes; axis scopes generated Bezier handles. Easing/custom curves require numeric values on affected axes; linear/smooth/stepped retain Molang. Ranges select complete keys, so adjacent segments may change too.",
     annotations: {
       title: "Animation Graph Editor",
       destructiveHint: true,
     },
     parameters: animationGraphEditorParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "bone_rigging",
@@ -300,17 +305,17 @@ export const animationToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: animationTimelineParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "batch_keyframe_operations",
-    description: "Performs batch operations on multiple keyframes at once.",
+    description: "Operates on active-animation keys, including collapsed animators. Time edits reject negative times and same-channel collisions. Scale changes time and Bezier time handles; reverse uses native key/data-point/handle reversal semantics. Bake replaces each selected transform channel's span with numeric linear samples including its end. Mirror/smooth/bake/value offsets require transform keys.",
     annotations: {
       title: "Batch Keyframe Operations",
       destructiveHint: true,
     },
     parameters: batchKeyframeOperationsParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "animation_copy_paste",
@@ -321,7 +326,7 @@ export const animationToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: animationCopyPasteParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
 ];
 
@@ -405,10 +410,22 @@ createTool(
 
       // Find the bone
       const group = findGroupOrThrow(bone_name);
+      if (!keyframes.length) throw new Error("Provide at least one keyframe.");
+      if (keyframes.some((kf: { time: number }) => !Number.isFinite(kf.time) || kf.time < 0)) throw new Error("Keyframe times must be finite and nonnegative.");
+      let animator = animation.animators[group.uuid];
+      const matches = action === "create" ? [] : keyframes.map((kf: { time: number }) => {
+        const match = animator?.[channel]?.find((key: _Keyframe) => Math.abs(key.time - kf.time) < 0.001);
+        if (!match) throw new Error(`No keyframe at ${kf.time} for ${bone_name}.${channel}.`);
+        return match;
+      });
+      if (action === "select") {
+        animation.select();
+        animator.select();
+        selectAnimationKeyframes(matches);
+        return `Successfully performed ${action} on ${matches.length} keyframes for ${bone_name}.${channel}`;
+      }
 
       Undo.initEdit({ animations: [animation] });
-      // Get or create animator
-      let animator = animation.animators[group.uuid];
       if (!animator) {
         animator = new BoneAnimator(group.uuid, animation, bone_name);
         animation.animators[group.uuid] = animator;
@@ -487,20 +504,10 @@ createTool(
           });
           break;
 
-        case "select":
-          Timeline.selected.empty();
-          keyframes.forEach((kf) => {
-            const keyframe = animator[channel]?.find(
-              (k) => Math.abs(k.time - kf.time) < 0.001
-            );
-            if (keyframe) {
-              keyframe.select();
-            }
-          });
-          break;
       }
 
       Undo.finishEdit(`${action} keyframes`);
+      updateKeyframeSelection();
       Animator.preview();
 
       return `Successfully performed ${action} on ${keyframes.length} keyframes for ${bone_name}.${channel}`;
@@ -540,15 +547,25 @@ createTool(
       }
 
       if (action === "custom" && !custom_curve) throw new Error("custom_curve is required.");
-      Undo.initEdit({ animations: [animation] });
+      if (keyframe_range && (![keyframe_range.start, keyframe_range.end].every(Number.isFinite) || keyframe_range.start < 0 || keyframe_range.end < keyframe_range.start)) throw new Error("Keyframe range must be finite, ordered and nonnegative.");
+      if (custom_curve && [custom_curve.control_point_1, custom_curve.control_point_2].some(point => !point.every(Number.isFinite) || point[0] < 0 || point[0] > 1)) throw new Error("Custom curve times must be 0–1 and values must be finite.");
 
-      const keyframes = animator[channel].filter((kf) => {
+      const keyframes: _Keyframe[] = animator[channel].filter((kf: _Keyframe) => {
         if (!keyframe_range) return true;
         return kf.time >= keyframe_range.start && kf.time <= keyframe_range.end;
       });
 
       keyframes.sort((a: _Keyframe, b: _Keyframe) => a.time - b.time);
-      keyframes.forEach((kf, index) => {
+      if (!keyframes.length) throw new Error("No keyframes in the requested range.");
+      const bezier = ["ease_in", "ease_out", "ease_in_out", "custom"].includes(action);
+      const components = axis === "all" ? [0, 1, 2] : [axes.indexOf(axis)];
+      if (bezier) {
+        if (keyframes.length < 2) throw new Error("Bezier easing requires at least two keyframes.");
+        if (keyframes.some(kf => kf.data_points.some(point => components.some(component => !Number.isFinite(Number(point[axes[component]])))))) throw new Error("Bezier easing requires numeric values on the affected axes. Use linear/smooth/stepped for Molang expressions.");
+        if (keyframes.some((kf, i) => i > 0 && kf.time <= keyframes[i - 1].time)) throw new Error("Bezier easing requires distinct keyframe times.");
+      }
+      Undo.initEdit({ animations: [animation] });
+      keyframes.forEach(kf => {
         switch (action) {
           case "linear":
             kf.interpolation = "linear";
@@ -574,8 +591,7 @@ createTool(
         }
       });
 
-      if (["ease_in", "ease_out", "ease_in_out", "custom"].includes(action)) {
-        const components = axis === "all" ? [0, 1, 2] : [axes.indexOf(axis)];
+      if (bezier) {
         const curve = action === "custom" ? [custom_curve!.control_point_1, custom_curve!.control_point_2] :
           action === "ease_in" ? [[0.42, 0], [1, 1]] :
           action === "ease_out" ? [[0, 0], [0.58, 1]] : [[0.42, 0], [0.58, 1]];
@@ -583,7 +599,7 @@ createTool(
           const left = keyframes[i], right = keyframes[i + 1];
           const duration = right.time - left.time;
           for (const component of components) {
-            const delta = right.calc(axes[component]) - left.calc(axes[component]);
+            const delta = Number(right.data_points[0][axes[component]]) - Number(left.data_points.at(-1)![axes[component]]);
             left.bezier_right_time[component] = duration * curve[0][0];
             left.bezier_right_value[component] = delta * curve[0][1];
             right.bezier_left_time[component] = duration * (curve[1][0] - 1);
@@ -758,6 +774,12 @@ createTool(
       }
 
       let result = "";
+      if (action === "set_time" && (time === undefined || !Number.isFinite(time) || time < 0)) throw new Error("A finite nonnegative time is required.");
+      if (action === "set_length" && (length === undefined || !Number.isFinite(length) || length < 0)) throw new Error("A finite nonnegative length is required.");
+      if (action === "set_fps" && fps === undefined) throw new Error("FPS parameter required for set_fps action.");
+      if (action === "select_range" && (!range || range.start < 0 || range.end < range.start || !Number.isFinite(range.end))) throw new Error("An ordered nonnegative range is required.");
+      const changesAnimation = ["set_length", "set_fps"].includes(action) || (action === "loop" && loop_mode !== undefined);
+      if (changesAnimation) Undo.initEdit({ animations: [Animation.selected] });
 
       switch (action) {
         case "play":
@@ -788,8 +810,8 @@ createTool(
           if (length === undefined) {
             throw new Error("Length parameter required for set_length action.");
           }
-          Animation.selected.length = length;
-          result = `Set animation length to ${length} seconds`;
+          Animation.selected.setLength(length);
+          result = `Set animation length to ${Animation.selected.length} seconds`;
           break;
 
         case "set_fps":
@@ -814,17 +836,12 @@ createTool(
             );
           }
           // Select keyframes in range
-          Timeline.keyframes.forEach((kf) => {
-            if (kf.time >= range.start && kf.time <= range.end) {
-              kf.select();
-            } else {
-              kf.selected = false;
-            }
-          });
+          selectAnimationKeyframes(Timeline.keyframes.filter(kf => kf.time >= range.start && kf.time <= range.end));
           result = `Selected keyframes between ${range.start} and ${range.end} seconds`;
           break;
       }
 
+      if (changesAnimation) Undo.finishEdit(`Animation timeline: ${action}`);
       Animator.preview();
 
       return result;
@@ -842,23 +859,25 @@ createTool(
         throw new Error("No animation selected.");
       }
 
-      // Gather keyframes based on selection type
-      let keyframes: any[] = [];
+      // A collapsed/hidden timeline does not remove its animation keyframes.
+      const allKeyframes: _Keyframe[] = Object.values(Animation.selected.animators).flatMap(animator => animator.keyframes);
+      let keyframes: _Keyframe[] = [];
+      if (range && (!Number.isFinite(range.start) || !Number.isFinite(range.end) || range.start < 0 || range.end < range.start)) throw new Error("Range must be finite, ordered and nonnegative.");
 
       switch (selection) {
         case "all":
-          keyframes = Timeline.keyframes;
+          keyframes = allKeyframes;
           break;
 
         case "selected":
-          keyframes = Timeline.selected;
+          keyframes = allKeyframes.filter(kf => Timeline.selected.includes(kf));
           break;
 
         case "range":
           if (!range) {
             throw new Error("Range required for range selection.");
           }
-          keyframes = Timeline.keyframes.filter(
+          keyframes = allKeyframes.filter(
             (kf) => kf.time >= range.start && kf.time <= range.end
           );
           break;
@@ -867,15 +886,30 @@ createTool(
           if (!pattern) {
             throw new Error("Pattern required for pattern selection.");
           }
-          keyframes = Timeline.keyframes.filter((kf) => {
-            const relativeTime = kf.time - pattern.offset;
-            return Math.abs(relativeTime % pattern.interval) < 0.001;
+          if (!Number.isFinite(pattern.offset)) throw new Error("Pattern offset must be finite.");
+          keyframes = allKeyframes.filter((kf) => {
+            const step = (kf.time - pattern.offset) / pattern.interval;
+            return Math.abs(step - Math.round(step)) * pattern.interval < 0.001;
           });
           break;
       }
 
       if (keyframes.length === 0) {
         throw new Error("No keyframes found matching selection criteria.");
+      }
+      if (operation === "mirror" && !parameters.mirror_axis) throw new Error("Mirror axis required for mirror operation.");
+      if (Object.values(parameters).some(value => typeof value === "number" && !Number.isFinite(value))) throw new Error("Operation parameters must be finite.");
+      if (parameters.offset_values?.some((value: number) => !Number.isFinite(value))) throw new Error("Value offsets must be finite.");
+      if ((["mirror", "smooth", "bake"].includes(operation) || parameters.offset_values) && keyframes.some(kf => !["rotation", "position", "scale"].includes(kf.channel))) throw new Error("This operation requires transform keyframes; narrow the selection.");
+      const pivot = parameters.scale_pivot ?? 0, factor = parameters.scale_factor ?? 1;
+      if (operation === "scale" && factor <= 0) throw new Error("Time scale must be positive; use reverse for time reversal.");
+      const minTime = Math.min(...keyframes.map(kf => kf.time)), maxTime = Math.max(...keyframes.map(kf => kf.time));
+      const plannedTimes = new Map(keyframes.map(kf => [kf, operation === "offset" ? kf.time + (parameters.offset_time ?? 0) : operation === "scale" ? pivot + (kf.time - pivot) * factor : operation === "reverse" ? minTime + maxTime - kf.time : kf.time]));
+      if ([...plannedTimes.values()].some(time => !Number.isFinite(time) || time < 0)) throw new Error("Resulting keyframe times must be finite and nonnegative.");
+      if (["offset", "scale", "reverse"].includes(operation)) {
+        for (const key of keyframes) for (const other of allKeyframes) {
+          if (key !== other && key.animator === other.animator && key.channel === other.channel && Math.abs(plannedTimes.get(key)! - (plannedTimes.get(other) ?? other.time)) < 0.00001) throw new Error("Operation would collide with another keyframe in the same channel.");
+        }
       }
 
       const bakeSamples: Array<{ animator: BoneAnimator; channel: string; time: number; values: number[] }> = [];
@@ -887,58 +921,61 @@ createTool(
           for (const channel of ["rotation", "position", "scale"]) {
             const selected = keyframes.filter(kf => kf.animator === animator && kf.channel === channel);
             if (selected.length < 2) continue;
-            const times = bakeTimes(Math.min(...selected.map(kf => kf.time)), Math.max(...selected.map(kf => kf.time)), interval);
+            const end = Math.max(...selected.map(kf => kf.time));
+            const times = bakeTimes(Math.min(...selected.map(kf => kf.time)), end, interval);
+            if (Math.abs(times.at(-1)! - end) > 1e-9) times.push(end);
             count += times.length;
             if (count > MAX_BAKED_KEYFRAMES) throw new Error("Bake exceeds total keyframe limit; increase bake_interval.");
-            plans.push({ animator, channel, times });
+            plans.push({ animator: animator as BoneAnimator, channel, times });
           }
         }
         const previousTime = Timeline.time;
         try {
           for (const { animator, channel, times } of plans) for (const time of times) {
             Timeline.time = time;
-            const values = animator.interpolate(channel, true);
-            if (!values) throw new Error(`Cannot sample ${channel} at ${time}`);
+            const values = animator.interpolate(channel, false);
+            if (!Array.isArray(values) || values.some(value => !Number.isFinite(value))) throw new Error(`Cannot sample ${channel} at ${time}`);
             bakeSamples.push({ animator, channel, time, values });
           }
         } finally { Timeline.time = previousTime; }
+        if (!bakeSamples.length) throw new Error("Baking requires at least two selected keys in a transform channel.");
       }
       Undo.initEdit({ animations: [Animation.selected] });
-
+      try {
       switch (operation) {
         case "offset":
           keyframes.forEach((kf) => {
             if (parameters.offset_time !== undefined) {
-              kf.time += parameters.offset_time;
+              kf.time = plannedTimes.get(kf)!;
             }
             if (parameters.offset_values) {
               kf.uniform = false;
-              axes.forEach((axis, index) => kf.offset(axis, parameters.offset_values[index]));
+              kf.data_points.forEach((_, point) => axes.forEach((axis, index) => kf.offset(axis, parameters.offset_values![index], point)));
             }
           });
           break;
 
         case "scale":
-          const pivot = parameters.scale_pivot || 0;
-          const factor = parameters.scale_factor ?? 1;
           keyframes.forEach((kf) => {
-            kf.time = pivot + (kf.time - pivot) * factor;
+            kf.time = plannedTimes.get(kf)!;
+            kf.bezier_left_time = kf.bezier_left_time.map(value => value * factor) as ArrayVector3;
+            kf.bezier_right_time = kf.bezier_right_time.map(value => value * factor) as ArrayVector3;
           });
           break;
 
         case "reverse":
-          const times = keyframes.map((kf) => kf.time);
-          const minTime = Math.min(...times);
-          const maxTime = Math.max(...times);
           keyframes.forEach((kf) => {
-            kf.time = maxTime - (kf.time - minTime);
+            kf.time = plannedTimes.get(kf)!;
+            if (kf.data_points.length > 1) kf.data_points.reverse();
+            const leftTime = [...kf.bezier_left_time], leftValue = [...kf.bezier_left_value];
+            kf.bezier_left_time = kf.bezier_right_time.map(value => -value) as ArrayVector3;
+            kf.bezier_left_value = [...kf.bezier_right_value] as ArrayVector3;
+            kf.bezier_right_time = leftTime.map(value => -value) as ArrayVector3;
+            kf.bezier_right_value = leftValue as ArrayVector3;
           });
           break;
 
         case "mirror":
-          if (!parameters.mirror_axis) {
-            throw new Error("Mirror axis required for mirror operation.");
-          }
           const axisIndex =
             parameters.mirror_axis === "x"
               ? 0
@@ -946,9 +983,7 @@ createTool(
               ? 1
               : 2;
           keyframes.forEach((kf) => {
-            const values = kf.getArray();
-            values[axisIndex] = `-(${values[axisIndex]})`;
-            setKeyframeValues(kf, values);
+            (kf as unknown as { flip(axis: number): void }).flip(axisIndex);
           });
           break;
 
@@ -960,12 +995,21 @@ createTool(
           break;
 
         case "bake":
+          for (const animator of new Set(bakeSamples.map(sample => sample.animator))) for (const channel of ["rotation", "position", "scale"] as const) {
+            const samples = bakeSamples.filter(sample => sample.animator === animator && sample.channel === channel);
+            if (!samples.length) continue;
+            const start = samples[0].time, end = samples.at(-1)!.time;
+            for (const keyframe of [...animator[channel]]) if (keyframe.time >= start && keyframe.time <= end) keyframe.remove();
+          }
           for (const sample of bakeSamples) {
             addAnimationKeyframe(sample.animator, { ...keyframeValues(sample.values), interpolation: "linear" }, sample.time, sample.channel);
           }
           break;     }
 
+      Animation.selected.setLength();
       Undo.finishEdit(`Batch keyframe operation: ${operation}`);
+      } catch (error) { Undo.cancelEdit(); throw error; }
+      updateKeyframeSelection();
       Animator.preview();
 
       return `Performed ${operation} on ${keyframes.length} keyframes`;
@@ -979,13 +1023,6 @@ createTool(
   {
     ...animationToolDocs[6],
     async execute({ action, source, target }) {
-      // Static storage for copied data between copy/paste operations
-      // @ts-ignore
-      if (!global.animationClipboard) {
-        // @ts-ignore
-        global.animationClipboard = null;
-      }
-
       switch (action) {
         case "copy": {
           if (!source) {
@@ -1011,43 +1048,27 @@ createTool(
           }
 
           // Copy keyframe data
-          const copiedData: any = {
-            bone_name: source.bone,
-            channels: {},
-          };
+          const copiedData: Record<string, CopiedKeyframe[]> = {};
 
-          source.channels.forEach((channel) => {
+          source.channels.forEach((channel: "rotation" | "position" | "scale") => {
             if (!animator[channel]) return;
 
             let keyframes = animator[channel];
             if (source.time_range) {
               keyframes = keyframes.filter(
-                (kf) =>
+                (kf: _Keyframe) =>
                   kf.time >= source.time_range.start &&
                   kf.time <= source.time_range.end
               );
             }
 
-            copiedData.channels[channel] = keyframes.map((kf) => ({
-              time: kf.time,
-              values: kf.getArray(),
-              interpolation: kf.interpolation,
-              // @ts-ignore
-              bezier_left_time: kf.bezier_left_time,
-              // @ts-ignore
-              bezier_left_value: kf.bezier_left_value,
-              // @ts-ignore
-              bezier_right_time: kf.bezier_right_time,
-              // @ts-ignore
-              bezier_right_value: kf.bezier_right_value,
-            }));
+            copiedData[channel] = keyframes.map((kf: _Keyframe) => structuredClone({ ...kf.getUndoCopy(false), time: kf.time }));
           });
-
-          // @ts-ignore
-          global.animationClipboard = copiedData;
+          if (!Object.values(copiedData).some(keys => keys.length)) throw new Error("No keyframes in the requested channels/range.");
+          animationClipboard = copiedData;
 
           return `Copied animation data from "${source.bone}" (${Object.keys(
-            copiedData.channels
+            copiedData
           ).join(", ")})`;
         }
 
@@ -1057,8 +1078,7 @@ createTool(
             throw new Error("Target data required for paste operation.");
           }
 
-          // @ts-ignore
-          if (!global.animationClipboard) {
+          if (!animationClipboard) {
             throw new Error("No animation data in clipboard. Copy first.");
           }
 
@@ -1074,6 +1094,11 @@ createTool(
           }
 
           const tgtBone = findGroupOrThrow(target.bone);
+          const timeOffset = target.time_offset ?? 0;
+          for (const keys of Object.values(animationClipboard)) for (const key of keys) {
+            const time = key.time + timeOffset;
+            if (!Number.isFinite(time) || time < 0) throw new Error("Pasted keyframe times must be finite and nonnegative.");
+          }
 
           Undo.initEdit({ animations: [tgtAnimation] });
           let animator = tgtAnimation.animators[tgtBone.uuid];
@@ -1088,8 +1113,7 @@ createTool(
 
 
 
-          // @ts-ignore
-          const clipboardData = global.animationClipboard;
+          const clipboardData = animationClipboard;
           const mirrorAxis =
             action === "mirror_paste" ? target.mirror_axis || "x" : null;
           const axisIndex =
@@ -1101,50 +1125,24 @@ createTool(
               ? 2
               : -1;
 
-          Object.entries(clipboardData.channels).forEach(
-            ([channel, keyframes]: [string, any[]]) => {
+          Object.entries(clipboardData).forEach(
+            ([channel, keyframes]) => {
               keyframes.forEach((kfData) => {
-                const values = [...kfData.values];
-
-                // Apply mirroring if needed
-                if (
-                  mirrorAxis &&
-                  (channel === "rotation" || channel === "position")
-                ) {
-                  values[axisIndex] = `-(${values[axisIndex]})`;
-                }
-
                 const keyframe = addAnimationKeyframe(animator,
-                  {
-                    time: kfData.time + (target.time_offset || 0),
-                    channel,
-                    ...keyframeValues(values),
-                    interpolation: kfData.interpolation,
-                  },
-                  kfData.time + (target.time_offset || 0),
+                  structuredClone(kfData),
+                  kfData.time + timeOffset,
                   channel
                 );
-
-                // Copy bezier data if present
-                if (kfData.interpolation === "bezier") {
-                  // @ts-ignore
-                  if (kfData.bezier_left_time !== undefined)
-                    keyframe.bezier_left_time = handleVector(kfData.bezier_left_time);
-                  // @ts-ignore
-                  if (kfData.bezier_left_value)
-                    keyframe.bezier_left_value = handleVector(kfData.bezier_left_value);
-                  // @ts-ignore
-                  if (kfData.bezier_right_time !== undefined)
-                    keyframe.bezier_right_time = handleVector(kfData.bezier_right_time);
-                  // @ts-ignore
-                  if (kfData.bezier_right_value)
-                    keyframe.bezier_right_value = handleVector(kfData.bezier_right_value);
-                }
+                // Native reflection flips rotation about the other two axes,
+                // position on the chosen axis, and associated value handles.
+                // The 5.0.6 stub declares axis letters, but 5.1.6 uses 0/1/2.
+                if (mirrorAxis) (keyframe as unknown as { flip(axis: number): void }).flip(axisIndex);
               });
             }
           );
 
           Undo.finishEdit(`${action} animation data`);
+          updateKeyframeSelection();
           Animator.preview();
 
           return `Pasted animation data to "${target.bone}"${

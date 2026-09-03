@@ -1,56 +1,27 @@
-# Project: Blockbench MCP Plugin
-# Repository: https://github.com/jasonjgardner/blockbench-mcp-plugin
-# Author: Jason Gardner
-# Type: Blockbench Plugin
-# Target Platform: Minecraft + Blockbench
+# Blockbench MCP
 
-## Summary
-This is a plugin for Blockbench that integrates with the Model Context Protocol (MCP). It enables automated and contextual manipulation of 3D models using LLM-driven workflows. It is designed to assist with structured model generation, property editing, and potential export logic for downstream use.
+Maintained by Josshy, based on the original plugin by Jason J. Gardner.
+Repository: https://github.com/ItsJosshy/blockbench-mcp-plugin
+License: GPL-3.0-only; see LICENSE. Preserve original contributor credits.
 
-## Key Objectives
-- Connect Blockbench’s internal model representation to LLMs using a structured protocol (MCP).
-- Enable structured data exchange: import/export model metadata, geometry, animations, and textures.
-- Allow scripted or conversational workflows with AI agents to modify models in-place.
+Blockbench MCP runs a local Model Context Protocol server in desktop Blockbench.
+It exposes tools, resources and prompts for geometry, textures, painting,
+animation, project inspection, history and export. Hytale integration requires
+the Hytale Models plugin. There is no built-in LLM chat client.
 
-## Dependencies
-- Blockbench Plugin API (JavaScript-based)
-- Model Context Protocol (specification reference needed)
-- Three.js (via Blockbench)
-- Optionally, APIs for communication with a local or remote LLM agent
+Read AGENTS.md, README.md, CONTRIBUTING.md, VERSIONING.md and CHANGELOG.md before
+contributing. package.json is the only editable version source.
+docs/api.json is the generated schema inventory. docs/experimental-review.md
+records promotion evidence and blockers for every remaining experimental tool.
 
-## Features (Planned / In Progress)
-- [x] MCP schema parsing and validation
-- [ ] AI-assisted property editing (name, scale, origin, visibility, etc.)
-- [ ] AI-assisted animation creation or modification
-- [ ] Export geometry or metadata in MCP-compliant format
-- [ ] Basic UI integration (side panel, buttons, notifications)
-- [ ] LLM interface (agent chat or command-based interaction)
+Build with Bun 1.3.8: bun install --frozen-lockfile, then bun run build.
+Load dist/mcp.js through File > Plugins > Load Plugin from File and reconnect
+the client to http://127.0.0.1:3000/bb-mcp (or the configured endpoint).
+The maintained deployment is:
+https://itsjosshy.github.io/blockbench-mcp-plugin/nightly/mcp.js
+An unmerged local version is available only through the locally built file.
 
-## Development Setup
-1. Clone this repository into the Blockbench plugins folder or load it via `Plugins > Load Plugin from File`.
-2. Use Blockbench's developer mode for live reloading and debugging.
-3. The main entry point is `index.ts`.
-4. Enable logging in the developer console (`View > Developer Tools`) to track plugin actions.
-
-## Notes for LLM Tools
-- Focus on manipulating models through the Blockbench API (`Blockbench.model`, `Group`, `Cube`, `Outliner`, etc.)
-- MCP references should include object definitions, context-specific logic, and any validation rules.
-- Maintain two-way sync between the Blockbench UI state and MCP object model.
-- LLM tools can assist in generating plugin UI code (e.g., dialogs, sidebars) or creating MCP-compatible payloads.
-
-## Plugin API Reference
-- Official: https://www.blockbench.net/wiki
-- Common classes: `new Action()`, `new Dialog()`, `Blockbench.showQuickMessage()`
-- Typical usage patterns involve:
-  - Registering actions with `MenuBar.addAction`
-  - Manipulating models via `Outliner`, `selected`, or `Project` state
-  - Reading and writing metadata with `model.getProperty()` or `model.format`
-
-## License
-MIT License
-
-## Related Projects
-- JannisX11/Blockbench
-- Model Context Protocol (concept/protocol spec)
-
-# End of LLM.txt
+Tests: bun run test; bun run typecheck; bun run docs:build.
+Live checks: bun run test:live and bun run test:stability:live.
+Use disposable projects and preserve existing models and Undo histories.
+Verify native API behavior against the actual Blockbench version.

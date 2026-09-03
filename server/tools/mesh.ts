@@ -2,7 +2,7 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { extrudeMesh, subdivideMesh, deleteMeshSelection } from "@/lib/meshEditing";
-import { meshSelectionState, type MeshComponentSelection } from "@/lib/geometry";
+import { meshSelectionState, validateMeshComponents, withMeshSelection, type MeshComponentSelection } from "@/lib/geometry";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import {
   meshSchema,
@@ -203,7 +203,7 @@ export const meshToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: placeMeshParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "extrude_mesh",
@@ -213,7 +213,7 @@ export const meshToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: extrudeMeshParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "subdivide_mesh",
@@ -223,7 +223,7 @@ export const meshToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: subdivideMeshParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "create_sphere",
@@ -245,7 +245,7 @@ export const meshToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: selectMeshElementsParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "move_mesh_vertices",
@@ -255,7 +255,7 @@ export const meshToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: moveMeshVerticesParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "delete_mesh_elements",
@@ -265,7 +265,7 @@ export const meshToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: deleteMeshElementsParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "merge_mesh_vertices",
@@ -276,7 +276,7 @@ export const meshToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: mergeMeshVerticesParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "create_mesh_face",
@@ -286,14 +286,14 @@ export const meshToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: createMeshFaceParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "create_cylinder",
     description: "Creates one or more cylinder meshes with optional end caps.",
     annotations: { title: "Create Cylinder", destructiveHint: true },
     parameters: createCylinderParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "knife_tool",
@@ -315,6 +315,7 @@ export function registerMeshTools() {
   createTool(meshToolDocs[0].name, {
     ...meshToolDocs[0],
     async execute({ elements, texture, group }, { reportProgress }) {
+      if (!Project || !Format.meshes) throw new Error("The active project format does not support meshes.");
       const total = elements.length;
 
       const projectTexture = texture
@@ -389,6 +390,7 @@ export function registerMeshTools() {
   createTool(meshToolDocs[3].name, {
     ...meshToolDocs[3],
     async execute({ elements, texture, group }, { reportProgress }) {
+      if (!Project || !Format.meshes) throw new Error("The active project format does not support meshes.");
       const total = elements.length;
 
       const projectTexture = texture
@@ -571,6 +573,7 @@ export function registerMeshTools() {
     ...meshToolDocs[5],
     async execute({ mesh_id, offset, vertices }) {
       const mesh = getMeshOrSelected(mesh_id);
+      const verticesToMove = validateMeshComponents(mesh, vertices ?? mesh.getSelectedVertices(), "vertices");
 
       Undo.initEdit({
         elements: [mesh],
@@ -580,8 +583,6 @@ export function registerMeshTools() {
           faces: true,
         },
       });
-
-      const verticesToMove = vertices || mesh.getSelectedVertices();
 
       verticesToMove.forEach((vkey) => {
         if (mesh.vertices[vkey]) {
@@ -699,6 +700,10 @@ export function registerMeshTools() {
     ...meshToolDocs[8],
     async execute({ mesh_id, vertices, texture }) {
       const mesh = getMeshOrSelected(mesh_id);
+      const faceVertices = validateMeshComponents(mesh, vertices, "vertices");
+      if (faceVertices.length !== vertices.length) throw new Error("A face requires distinct vertices.");
+      const projectTexture = texture ? getProjectTexture(texture) : undefined;
+      if (texture && !projectTexture) throw new Error(`Texture "${texture}" not found.`);
 
       Undo.initEdit({
         elements: [mesh],
@@ -712,13 +717,13 @@ export function registerMeshTools() {
       // Create the face
       const face = new MeshFace(mesh, {
         vertices,
-        texture: texture ? getProjectTexture(texture)?.uuid : undefined,
+        texture: projectTexture?.uuid,
       });
 
       const [faceKey] = mesh.addFaces(face);
 
       // Auto UV the new face
-      UVEditor.setAutoSize(null, true, [faceKey]);
+      withMeshSelection(mesh, [faceKey], () => UVEditor.setAutoSize(null, true, [faceKey]));
 
       mesh.preview_controller.updateGeometry(mesh);
       mesh.preview_controller.updateUV(mesh);
@@ -740,6 +745,7 @@ export function registerMeshTools() {
   createTool(meshToolDocs[9].name, {
     ...meshToolDocs[9],
     async execute({ elements, texture, group }, { reportProgress }) {
+      if (!Project || !Format.meshes) throw new Error("The active project format does not support meshes.");
       const total = elements.length;
       const projectTexture = texture
         ? getProjectTexture(texture)
@@ -783,10 +789,10 @@ export function registerMeshTools() {
           mesh.addFaces(
             new MeshFace(mesh, {
               vertices: [
-                bottomRing[i],
                 bottomRing[next],
-                topRing[next],
+                bottomRing[i],
                 topRing[i],
+                topRing[next],
               ],
               uv: {},
             })
@@ -795,14 +801,14 @@ export function registerMeshTools() {
             // top cap (triangle fan)
             mesh.addFaces(
               new MeshFace(mesh, {
-                vertices: [topRing[i], topRing[next], topCenter],
+                vertices: [topRing[next], topRing[i], topCenter],
                 uv: {},
               })
             );
             // bottom cap
             mesh.addFaces(
               new MeshFace(mesh, {
-                vertices: [bottomRing[next], bottomRing[i], bottomCenter],
+                vertices: [bottomRing[i], bottomRing[next], bottomCenter],
                 uv: {},
               })
             );

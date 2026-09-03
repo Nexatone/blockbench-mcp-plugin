@@ -1,5 +1,6 @@
 import { resolveMaterialChannels, assignMaterialChannel, refreshMaterials } from "@/lib/material";
 import { loadTextureImage } from "@/lib/textureImage";
+import { textureSetSchema } from "@/lib/textureSet";
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { z } from "zod";
@@ -12,7 +13,7 @@ import {
   findTextureGroupOrThrow,
   getChannelTextureInfo,
 } from "@/lib/util";
-import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { STATUS_STABLE } from "@/lib/constants";
 import {
   colorSchema,
   elementIdSchema,
@@ -244,7 +245,7 @@ export const textureToolDocs: ToolSpec[] = [
       openWorldHint: true,
     },
     parameters: createTextureParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "apply_texture",
@@ -265,7 +266,7 @@ export const textureToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: addTextureGroupParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "list_textures",
@@ -297,7 +298,7 @@ export const textureToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: createPbrMaterialParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "configure_material",
@@ -308,7 +309,7 @@ export const textureToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: configureMaterialParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "list_materials",
@@ -335,14 +336,14 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "import_texture_set",
     description:
-      "Imports a Minecraft Bedrock texture_set.json file and creates a PBR material with the associated textures.",
+      "Imports a Minecraft Bedrock texture_set.json material. Validates constants and decodes referenced PNG/TGA images before adding the material in one Undo step. Missing/invalid images and image paths already used in the project or set are rejected without changing the model. Configure existing materials instead of importing their images again.",
     annotations: {
       title: "Import Texture Set",
       destructiveHint: true,
       openWorldHint: true,
     },
     parameters: importTextureSetParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "assign_texture_channel",
@@ -353,7 +354,7 @@ export const textureToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: assignTextureChannelParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "save_material_config",
@@ -365,7 +366,7 @@ export const textureToolDocs: ToolSpec[] = [
       openWorldHint: true,
     },
     parameters: saveMaterialConfigParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "activate_texture",
@@ -600,7 +601,7 @@ export function registerTextureTools() {
       const affectedGroups = TextureGroup.all.filter(g => textureList.some(t => t.group === g.uuid));
       Undo.initEdit({ texture_groups: affectedGroups, textures: textureList });
       const textureGroup = new TextureGroup({ name, is_material }).add();
-      for (const texture of textureList) texture.extend({ group: textureGroup.uuid });
+      for (const texture of textureList) texture.group = textureGroup.uuid;
       refreshMaterials([...affectedGroups, textureGroup]);
       Undo.finishEdit("Agent added texture group", { texture_groups: [...affectedGroups, textureGroup], textures: textureList });
       Canvas.updateAll();
@@ -826,15 +827,74 @@ export function registerTextureTools() {
         );
       }
 
-      // @ts-ignore - fs module available via Blockbench
       const fs = requireNativeModule("fs");
+      if (!fs) throw new Error("Filesystem access is unavailable.");
       if (!fs.existsSync(path)) {
         throw new Error(`File not found: ${path}`);
       }
 
-      // Use Blockbench's importTextureSet function
-      // @ts-ignore - importTextureSet is globally available
-      importTextureSet({ path, name: path.split(/[\/\\]/).pop() });
+      if (!Project || Undo.current_save) throw new Error("Open a project and finish its current edit before importing.");
+      const targetProject = Project;
+      const paths: typeof import("path") = requireNativeModule("path");
+      const data = textureSetSchema.parse(JSON.parse(fs.readFileSync(path, "utf8")))["minecraft:texture_set"];
+      const channelNames = {color:"color", normal:"normal", heightmap:"height", metalness_emissive_roughness:"mer", metalness_emissive_roughness_subsurface:"mer"} as const;
+      const inputs = Object.entries(data).map(([key, value]) => {
+        if (typeof value !== "string" || value.startsWith("#")) return {key,value};
+        const candidates = [".png", ".tga"].map(extension=>paths.resolve(paths.dirname(path),value+extension));
+        const file = candidates.find(candidate=>fs.existsSync(candidate));
+        if (!file) throw new Error(`Missing image for texture-set channel ${key}: ${value}`);
+        return {key,value,file,bytes:fs.readFileSync(file)};
+      });
+      const canonicalPath = (file: string) => paths.sep === "\\" ? paths.resolve(file).toLowerCase() : paths.resolve(file);
+      const existingPaths = new Set(Texture.all.filter(texture=>texture.path).map(texture=>canonicalPath(texture.path!)));
+      for (const input of inputs) if (input.file) {
+        const key=canonicalPath(input.file);
+        if (existingPaths.has(key)) throw new Error(`Texture image is already used in this project or texture set: ${input.file}. Configure the existing material instead.`);
+        existingPaths.add(key);
+      }
+      const textureGroup = new TextureGroup({name:paths.basename(path).replace(".texture_set.json", ".png material"),is_material:true});
+      const textures: Texture[] = [];
+      for (const input of inputs) {
+        if (input.file && input.bytes) {
+          const texture = new Texture({name:paths.basename(input.file),pbr_channel:channelNames[input.key as keyof typeof channelNames]});
+          if (input.file.endsWith(".tga")) {
+            const decoder = (Texture as unknown as {file_formats:{tga:{decode(data:Uint8Array,texture:Texture):Promise<void>}}}).file_formats.tga;
+            await loadTextureImage(texture,()=>decoder.decode(input.bytes!,texture));
+          } else await loadTextureImage(texture,()=>{texture.fromDataURL("data:image/png;base64,"+input.bytes!.toString("base64"));});
+          texture.path=input.file; texture.saved=true;
+          texture.group=textureGroup.uuid;
+          textures.push(texture);
+        } else {
+          let values: number[];
+          if (typeof input.value === "string") {
+            // Hex constants are a native texture-set convention.
+            const hex=input.value.slice(1);
+            if (![6,8].includes(hex.length)||!/^[\da-f]+$/i.test(hex)) throw new Error(`Invalid color constant for ${input.key}.`);
+            values=hex.match(/../g)!.map(pair=>parseInt(pair,16));
+            if (values.length===3) values.push(255);
+          } else values=[...input.value];
+          if (input.key==="color") textureGroup.material_config.color_value=[values[0],values[1],values[2],values[3]??255];
+          else if (input.key.startsWith("metalness")) {
+            textureGroup.material_config.mer_value=values.slice(0,3) as ArrayVector3;
+            if (input.key.endsWith("subsurface")) textureGroup.material_config.subsurface_value=values[3]??0;
+          } else throw new Error(`Channel ${input.key} requires an image reference.`);
+        }
+        if (input.key==="metalness_emissive_roughness_subsurface" && input.file) textureGroup.material_config.subsurface_value=1;
+      }
+      if (Project!==targetProject || Undo.current_save) throw new Error("The active project or edit changed during image loading; retry the import.");
+      Undo.initEdit({textures:[],texture_groups:[]});
+      try {
+        textureGroup.add();
+        for (const texture of textures) texture.add(false, true);
+        textureGroup.updateMaterial();
+        textureGroup.material_config.saved=true;
+        Undo.finishEdit("Import texture set",{textures,texture_groups:[textureGroup]});
+      } catch (error) {
+        for (const texture of textures) if (Texture.all.includes(texture)) texture.remove();
+        if (TextureGroup.all.includes(textureGroup)) textureGroup.remove();
+        Undo.cancelEdit();throw error;
+      }
+      Canvas.updateAll();
 
       return `Imported texture set from "${path}". Check the textures panel for the new material.`;
     },
@@ -864,14 +924,23 @@ export function registerTextureTools() {
     async execute({ material }) {
       const textureGroup = findTextureGroupOrThrow(material);
       const filePath = textureGroup.material_config.getFilePath();
+      const colorTexture = textureGroup.getTextures().find(texture => texture.pbr_channel === "color");
+      const fs = requireNativeModule("fs");
+      if (!fs) throw new Error("Filesystem access is unavailable.");
+      const path: typeof import("path") = requireNativeModule("path");
 
-      if (!filePath) {
+      if (!filePath || !colorTexture?.path || !path.isAbsolute(filePath)) {
         throw new Error(
           "Cannot save: Material needs a color texture with a valid file path. Save the color texture first, then try again."
         );
       }
-
+      if (!fs.statSync(path.dirname(filePath)).isDirectory()) throw new Error("Material output directory does not exist.");
+      // Desktop 5.1.6 saves synchronously. A native early return must not be
+      // reported as success, and saved state must only change after a write.
+      const expected = textureGroup.material_config.compileForBedrock();
       textureGroup.material_config.save();
+      const actual = JSON.parse(fs.readFileSync(filePath, "utf8"));
+      if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error("Saved material config does not match the current material.");
 
       return `Saved material config to "${filePath}"`;
     },

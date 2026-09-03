@@ -176,3 +176,6 @@ Use Agent Skills to orchestrate tool usage.
 ## Plugin Development
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed instructions on setting up the development environment and how to add new tools, resources, and prompts.
+
+For the complete experimental feature inventory, stable promotions, native API
+research and remaining work, see [the stability review](docs/experimental-review.md).

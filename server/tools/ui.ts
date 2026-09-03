@@ -88,14 +88,14 @@ export const fillDialogParametersSchema = z.object({
 export const uiToolDocs: ToolSpec[] = [
   {
     name: "trigger_action",
-    description: "Triggers an action in the Blockbench editor.",
+    description: "Triggers an available Blockbench Action. confirmDialog confirms only a new dialog opened synchronously by that action; pre-existing dialogs are left open. Async dialogs require a subsequent fill_dialog call.",
     annotations: {
       title: "Trigger Action",
       destructiveHint: true,
       openWorldHint: true,
     },
     parameters: triggerActionParametersSchema,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "risky_eval",
@@ -129,7 +129,7 @@ export const uiToolDocs: ToolSpec[] = [
       openWorldHint: true,
     },
     parameters: fillDialogParametersSchema,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
 ];
 
@@ -148,12 +148,16 @@ export function registerUITools() {
               `Invalid JSON in confirmEvent: ${e instanceof Error ? e.message : e}`
             );
           }
+          if (!parsedArgs || typeof parsedArgs !== "object" || Array.isArray(parsedArgs)) throw new Error("confirmEvent must contain a JSON object.");
         }
 
         if (!(action in BarItems)) {
           throw new Error(`Action "${action}" not found.`);
         }
         const barItem = BarItems[action];
+        if (!(barItem instanceof Action)) throw new Error(`"${action}" is not a triggerable action.`);
+        if (!Condition(barItem.condition)) throw new Error(`Action "${action}" is unavailable in the current context.`);
+        const previousDialog = Dialog.open;
 
         if (barItem && barItem instanceof Action) {
           const { event, ...rest } = parsedArgs;
@@ -164,7 +168,7 @@ export function registerUITools() {
           );
         }
 
-        if (confirmDialog) {
+        if (confirmDialog && Dialog.open !== previousDialog) {
           Dialog.open?.confirm();
         }
 
@@ -254,6 +258,8 @@ export function registerUITools() {
             `Invalid JSON in values: ${e instanceof Error ? e.message : e}`
           );
         }
+
+        if (!parsedValues || typeof parsedValues !== "object" || Array.isArray(parsedValues)) throw new Error("values must contain a JSON object.");
 
         const keys = Object.keys(Dialog.open?.getFormResult() ?? {});
         const valuesToFill = Object.entries(parsedValues).reduce(

@@ -8,7 +8,8 @@ Before configuring the MCP connection, please confirm:
 
 1. **Is Blockbench running?**
    - The Blockbench desktop application must be open
-   - The MCP plugin must be installed (File > Plugins > Load from URL: `https://jasonjgardner.github.io/blockbench-mcp-plugin/mcp.js`)
+   - The MCP plugin must be installed (File > Plugins > Load from URL: `https://itsjosshy.github.io/blockbench-mcp-plugin/nightly/mcp.js`)
+   - For unmerged development work, build and load this checkout's `dist/mcp.js` instead.
 
 2. **What are your server settings?**
    - Default: `http://localhost:3000/bb-mcp`

@@ -15,11 +15,12 @@ interface SelectionRequest {
 /** Blockbench selections are binary masks. Rectangle bounds are half-open. */
 export function editTextureSelection(selection: PixelSelection, request: SelectionRequest): void {
   const { action, coordinates, radius = 0, mode = "create" } = request;
-  if (action === "feather_selection") throw new Error("Blockbench uses binary selection masks; feathering is not supported. Use brush softness for a soft edge.");
+  if (action === "feather_selection") throw new Error("feather_selection is deprecated: Blockbench uses binary selection masks; feathering is not supported. Use brush softness for a soft edge.");
   if (action === "select_all") { selection.setOverride(true); return; }
   if (action === "clear_selection") { selection.setOverride(false); return; }
   const shape = action === "select_rectangle" || action === "select_ellipse";
   if (shape && !coordinates) throw new Error("Coordinates are required for a selection shape.");
+  if (coordinates && !Object.values(coordinates).every(Number.isFinite)) throw new Error("Selection coordinates must be finite.");
   if ((action === "expand_selection" || action === "contract_selection") && request.radius === undefined) throw new Error("Radius is required to expand or contract a selection.");
   if (!Number.isInteger(radius) || radius < 0 || radius > 128) throw new Error("Selection radius must be an integer from 0 to 128.");
   const { width, height } = selection;

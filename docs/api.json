@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "generatedAt": "2026-09-02T19:02:46.921Z",
+  "version": "1.1.0",
+  "generatedAt": "2026-09-03T03:15:23.142Z",
   "tools": [
     {
       "name": "place_cube",
@@ -356,8 +356,8 @@
     {
       "name": "set_camera_angle",
       "title": "Set Camera Angle",
-      "description": "Sets the camera angle to the specified value.",
-      "status": "experimental",
+      "description": "Sets the selected preview camera and returns a viewport screenshot. Position and target use model units; rotation uses degrees in ZYX order. Target takes precedence over rotation. Projection 'unset' preserves the current projection. Changes editor view state, without creating a model Undo entry.",
+      "status": "stable",
       "category": "Camera & Screenshots",
       "annotations": {
         "destructiveHint": true
@@ -532,7 +532,7 @@
       "name": "manage_keyframes",
       "title": "Manage Keyframes",
       "description": "Creates, deletes, or edits keyframes in the animation timeline for specific bones and channels.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Animation",
       "annotations": {
         "destructiveHint": true
@@ -726,8 +726,8 @@
     {
       "name": "animation_graph_editor",
       "title": "Animation Graph Editor",
-      "description": "Controls animation curves in the graph editor for fine-tuning animations.",
-      "status": "experimental",
+      "description": "Controls native keyframe interpolation. Interpolation type applies to all axes; axis scopes generated Bezier handles. Easing/custom curves require numeric values on affected axes; linear/smooth/stepped retain Molang. Ranges select complete keys, so adjacent segments may change too.",
+      "status": "stable",
       "category": "Animation",
       "annotations": {
         "destructiveHint": true
@@ -774,8 +774,8 @@
                   }
                 ],
                 "default": "all",
-                "description": "Axis to modify curves for.",
-                "markdownDescription": "Axis to modify curves for."
+                "description": "Axes for generated Bezier handles. Native interpolation type is shared by all axes of each keyframe.",
+                "markdownDescription": "Axes for generated Bezier handles. Native interpolation type is shared by all axes of each keyframe."
               },
               "action": {
                 "type": "string",
@@ -823,8 +823,8 @@
                     },
                     "minItems": 2,
                     "maxItems": 2,
-                    "description": "First control point [time, value].",
-                    "markdownDescription": "First control point [time, value]."
+                    "description": "First normalized control point [time, value]; time must be 0–1. Values may overshoot.",
+                    "markdownDescription": "First normalized control point [time, value]; time must be 0–1. Values may overshoot."
                   },
                   "control_point_2": {
                     "type": "array",
@@ -833,8 +833,8 @@
                     },
                     "minItems": 2,
                     "maxItems": 2,
-                    "description": "Second control point [time, value].",
-                    "markdownDescription": "Second control point [time, value]."
+                    "description": "Second normalized control point [time, value]; time must be 0–1. Values may overshoot.",
+                    "markdownDescription": "Second normalized control point [time, value]; time must be 0–1. Values may overshoot."
                   }
                 },
                 "required": [
@@ -971,7 +971,7 @@
       "name": "animation_timeline",
       "title": "Animation Timeline",
       "description": "Controls the animation timeline, including playback, time scrubbing, and timeline settings.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Animation",
       "annotations": {
         "destructiveHint": true
@@ -1059,8 +1059,8 @@
     {
       "name": "batch_keyframe_operations",
       "title": "Batch Keyframe Operations",
-      "description": "Performs batch operations on multiple keyframes at once.",
-      "status": "experimental",
+      "description": "Operates on active-animation keys, including collapsed animators. Time edits reject negative times and same-channel collisions. Scale changes time and Bezier time handles; reverse uses native key/data-point/handle reversal semantics. Bake replaces each selected transform channel's span with numeric linear samples including its end. Mirror/smooth/bake/value offsets require transform keys.",
+      "status": "stable",
       "category": "Animation",
       "annotations": {
         "destructiveHint": true
@@ -1080,8 +1080,8 @@
                   "pattern"
                 ],
                 "default": "selected",
-                "description": "Which keyframes to operate on.",
-                "markdownDescription": "Which keyframes to operate on."
+                "description": "Selection within the active animation, including collapsed/hidden animators. Selected uses its currently selected keys.",
+                "markdownDescription": "Selection within the active animation, including collapsed/hidden animators. Selected uses its currently selected keys."
               },
               "range": {
                 "type": "object",
@@ -1161,8 +1161,8 @@
                   },
                   "scale_factor": {
                     "type": "number",
-                    "description": "Scale factor for time or values.",
-                    "markdownDescription": "Scale factor for time or values."
+                    "description": "Positive time scale factor. Scales Bezier time handles too; use reverse for time reversal.",
+                    "markdownDescription": "Positive time scale factor. Scales Bezier time handles too; use reverse for time reversal."
                   },
                   "scale_pivot": {
                     "type": "number",
@@ -1204,7 +1204,7 @@
       "name": "animation_copy_paste",
       "title": "Animation Copy/Paste",
       "description": "Copies and pastes animation data between bones or animations.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Animation",
       "annotations": {
         "destructiveHint": true
@@ -1436,7 +1436,7 @@
       "name": "remove_armature",
       "title": "Remove Armature",
       "description": "Removes an armature and all its bones from the project.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Armature",
       "annotations": {
         "destructiveHint": true
@@ -1661,7 +1661,7 @@
       "name": "remove_armature_bone",
       "title": "Remove Armature Bone",
       "description": "Removes an armature bone from the project.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Armature",
       "annotations": {
         "destructiveHint": true
@@ -1770,7 +1770,7 @@
       "name": "update_armature_bones_batch",
       "title": "Update Armature Bones (Batch)",
       "description": "Updates multiple armature bones at once with the same properties.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Armature",
       "annotations": {
         "destructiveHint": true
@@ -1946,7 +1946,7 @@
       "name": "set_vertex_weights_batch",
       "title": "Set Vertex Weights (Batch)",
       "description": "Sets multiple vertex weights at once on a bone.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Armature",
       "annotations": {
         "destructiveHint": true
@@ -1992,7 +1992,7 @@
       "name": "clear_vertex_weights",
       "title": "Clear Vertex Weights",
       "description": "Clears all vertex weights from a bone for a specific mesh.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Armature",
       "annotations": {
         "destructiveHint": true
@@ -2027,7 +2027,7 @@
       "name": "remove_element",
       "title": "Remove Element",
       "description": "Removes the element with the given ID.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Elements",
       "annotations": {
         "destructiveHint": true
@@ -2176,7 +2176,7 @@
       "name": "duplicate_element",
       "title": "Duplicate Element",
       "description": "Duplicates a cube, mesh or group by ID or name.  You may offset the duplicate or assign a new name.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Elements",
       "annotations": {
         "destructiveHint": true
@@ -2224,7 +2224,7 @@
       "name": "rename_element",
       "title": "Rename Element",
       "description": "Renames a cube, mesh or group by ID or name.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Elements",
       "annotations": {
         "destructiveHint": true
@@ -2474,7 +2474,7 @@
       "name": "export_model",
       "title": "Export Model",
       "description": "Compiles the current project through the named codec and returns the result as text. Optionally writes the compiled content to a filesystem path (requires user permission in Blockbench v5.0+). Use `list_export_formats` first to discover codec IDs.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Export",
       "annotations": {
         "destructiveHint": false,
@@ -2610,8 +2610,8 @@
     {
       "name": "save_checkpoint",
       "title": "Save Checkpoint",
-      "description": "Inserts a named marker into the undo history. The marker can later be located with `get_undo_stack` so the agent knows how many times to call `undo` to return to this state. Does not modify the project.",
-      "status": "experimental",
+      "description": "Inserts a named marker into the undo history without changing model data or the saved flag. Locate it with `get_undo_stack`. Like any new history entry, it discards the redo branch and counts toward the undo limit; it is not a persistent backup.",
+      "status": "stable",
       "category": "History",
       "annotations": {
         "destructiveHint": false
@@ -2716,7 +2716,7 @@
       "name": "set_face_material_instance",
       "title": "Set Face Material Instance",
       "description": "Sets the material instance name for one or more cube faces. Material instances are strings that map to materials defined in the minecraft:material_instances component for Bedrock Block format.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Material Instances",
       "annotations": {
         "destructiveHint": true
@@ -2796,7 +2796,7 @@
       "name": "bulk_set_material_instances",
       "title": "Bulk Set Material Instances",
       "description": "Sets material instance names on multiple cubes at once. Useful for assigning different material instances to different faces across the project.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Material Instances",
       "annotations": {
         "destructiveHint": true
@@ -2864,7 +2864,7 @@
       "name": "clear_material_instances",
       "title": "Clear Material Instances",
       "description": "Clears (removes) material instance names from cube faces. Useful for resetting material assignments.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Material Instances",
       "annotations": {
         "destructiveHint": true
@@ -2913,7 +2913,7 @@
       "name": "place_mesh",
       "title": "Place Mesh",
       "description": "Places a mesh at the specified position. Texture and group are optional.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Mesh Editing",
       "annotations": {
         "destructiveHint": true
@@ -3027,7 +3027,7 @@
       "name": "extrude_mesh",
       "title": "Extrude Mesh",
       "description": "Extrudes selected faces or edges of a mesh.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Mesh Editing",
       "annotations": {
         "destructiveHint": true
@@ -3071,7 +3071,7 @@
       "name": "subdivide_mesh",
       "title": "Subdivide Mesh",
       "description": "Subdivides selected faces of a mesh to create more geometry.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Mesh Editing",
       "annotations": {
         "destructiveHint": true
@@ -3209,7 +3209,7 @@
       "name": "select_mesh_elements",
       "title": "Select Mesh Elements",
       "description": "Selects vertices, edges, or faces of a mesh for manipulation.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Mesh Editing",
       "annotations": {
         "destructiveHint": true
@@ -3273,7 +3273,7 @@
       "name": "move_mesh_vertices",
       "title": "Move Mesh Vertices",
       "description": "Moves selected vertices of a mesh by the specified offset.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Mesh Editing",
       "annotations": {
         "destructiveHint": true
@@ -3321,7 +3321,7 @@
       "name": "delete_mesh_elements",
       "title": "Delete Mesh Elements",
       "description": "Deletes selected vertices, edges, or faces from a mesh.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Mesh Editing",
       "annotations": {
         "destructiveHint": true
@@ -3365,7 +3365,7 @@
       "name": "merge_mesh_vertices",
       "title": "Merge Mesh Vertices",
       "description": "Merges vertices that are within a specified distance of each other.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Mesh Editing",
       "annotations": {
         "destructiveHint": true
@@ -3409,7 +3409,7 @@
       "name": "create_mesh_face",
       "title": "Create Mesh Face",
       "description": "Creates a new face from selected vertices.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Mesh Editing",
       "annotations": {
         "destructiveHint": true
@@ -3454,7 +3454,7 @@
       "name": "create_cylinder",
       "title": "Create Cylinder",
       "description": "Creates one or more cylinder meshes with optional end caps.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Mesh Editing",
       "annotations": {
         "destructiveHint": true
@@ -3613,8 +3613,8 @@
     {
       "name": "paint_fill_tool",
       "title": "Paint Fill Tool",
-      "description": "Uses the fill/bucket tool to fill areas with color.",
-      "status": "experimental",
+      "description": "Fills the active texture layer. Color modes match RGBA pixels globally or through four-connected neighbors, respecting selection and alpha lock; they do not mirror strokes or use color-erase mode. Other modes use native 2D fill behavior: face/element use the texture selection without a viewport face; selected_elements uses selected model UVs. One Undo step.",
+      "status": "stable",
       "category": "Paint Tools",
       "annotations": {
         "destructiveHint": true
@@ -3660,8 +3660,8 @@
                 "type": "number",
                 "minimum": 0,
                 "maximum": 100,
-                "description": "Color tolerance for fill.",
-                "markdownDescription": "Color tolerance for fill."
+                "description": "Maximum RGBA channel distance in percent (0–100), for color/color_connected fills. Other fill modes ignore color tolerance.",
+                "markdownDescription": "Maximum RGBA channel distance in percent (0–100), for color/color_connected fills. Other fill modes ignore color tolerance."
               },
               "fill_mode": {
                 "type": "string",
@@ -3708,7 +3708,7 @@
       "name": "draw_shape_tool",
       "title": "Draw Shape Tool",
       "description": "Draws geometric shapes on textures.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Paint Tools",
       "annotations": {
         "destructiveHint": true
@@ -3829,8 +3829,8 @@
     {
       "name": "gradient_tool",
       "title": "Gradient Tool",
-      "description": "Applies gradients to textures.",
-      "status": "experimental",
+      "description": "Applies a linear two-color gradient in texture coordinates to the active layer and selection. Endpoints are pixel coordinates; colors extend beyond them. Honors opacity, blend mode and alpha lock. Does not mirror strokes or use color-erase mode. One Undo step.",
+      "status": "stable",
       "category": "Paint Tools",
       "annotations": {
         "destructiveHint": true
@@ -3936,7 +3936,7 @@
       "name": "color_picker_tool",
       "title": "Color Picker Tool",
       "description": "Picks colors from textures and sets them as the active color.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Paint Tools",
       "annotations": {
         "readOnlyHint": true
@@ -3989,7 +3989,7 @@
       "name": "copy_brush_tool",
       "title": "Copy Brush Tool",
       "description": "Uses the copy/clone brush to copy texture areas.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Paint Tools",
       "annotations": {
         "destructiveHint": true
@@ -4085,7 +4085,7 @@
       "name": "eraser_tool",
       "title": "Eraser Tool",
       "description": "Erases parts of textures with customizable settings.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Paint Tools",
       "annotations": {
         "destructiveHint": true
@@ -4176,7 +4176,7 @@
       "name": "paint_settings",
       "title": "Paint Settings",
       "description": "Configures paint mode settings and preferences.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Paint Tools",
       "annotations": {
         "destructiveHint": true
@@ -4192,8 +4192,8 @@
                 "properties": {
                   "enabled": {
                     "type": "boolean",
-                    "description": "Enable mirror painting.",
-                    "markdownDescription": "Enable mirror painting."
+                    "description": "Enable mirror painting. Supplied options are updated even when disabled.",
+                    "markdownDescription": "Enable mirror painting. Supplied options are updated even when disabled."
                   },
                   "axis": {
                     "type": "array",
@@ -4205,8 +4205,8 @@
                         "z"
                       ]
                     },
-                    "description": "Mirror axes.",
-                    "markdownDescription": "Mirror axes."
+                    "description": "Replaces enabled mirror axes; an empty array disables all axes. Omit to preserve them.",
+                    "markdownDescription": "Replaces enabled mirror axes; an empty array disables all axes. Omit to preserve them."
                   },
                   "texture": {
                     "type": "boolean",
@@ -4309,7 +4309,7 @@
       "name": "paint_with_brush",
       "title": "Paint with Brush",
       "description": "Paints on textures using the brush tool with customizable settings.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Paint Tools",
       "annotations": {
         "destructiveHint": true
@@ -4433,7 +4433,7 @@
       "name": "create_brush_preset",
       "title": "Create Brush Preset",
       "description": "Creates a custom brush preset with specified settings.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Paint Tools",
       "annotations": {
         "destructiveHint": true
@@ -4523,7 +4523,7 @@
       "name": "load_brush_preset",
       "title": "Load Brush Preset",
       "description": "Loads and applies a brush preset by name.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Paint Tools",
       "annotations": {
         "destructiveHint": true
@@ -4552,8 +4552,8 @@
     {
       "name": "texture_selection",
       "title": "Texture Selection",
-      "description": "Creates, modifies, or manipulates texture selections for painting.",
-      "status": "experimental",
+      "description": "Creates and modifies binary texture selections without a bitmap Undo entry. feather_selection is deprecated and returns an explicit unsupported-operation error; use brush softness for soft edges.",
+      "status": "stable",
       "category": "Paint Tools",
       "annotations": {
         "destructiveHint": true
@@ -4576,8 +4576,8 @@
                   "contract_selection",
                   "feather_selection"
                 ],
-                "description": "Selection action to perform.",
-                "markdownDescription": "Selection action to perform."
+                "description": "Binary selection action. feather_selection is deprecated and returns an explicit unsupported-operation error; use brush softness for soft edges.",
+                "markdownDescription": "Binary selection action. feather_selection is deprecated and returns an explicit unsupported-operation error; use brush softness for soft edges."
               },
               "texture_id": {
                 "type": "string",
@@ -4649,7 +4649,7 @@
       "name": "texture_layer_management",
       "title": "Texture Layer Management",
       "description": "Creates, manages, and manipulates texture layers.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Paint Tools",
       "annotations": {
         "destructiveHint": true
@@ -4787,7 +4787,7 @@
       "name": "create_texture",
       "title": "Create Texture",
       "description": "Creates a new texture with the given name and size.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Textures",
       "annotations": {
         "destructiveHint": true,
@@ -4954,7 +4954,7 @@
       "name": "add_texture_group",
       "title": "Add Texture Group",
       "description": "Adds a new texture group with the given name.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Textures",
       "annotations": {
         "destructiveHint": true
@@ -5044,7 +5044,7 @@
       "name": "create_pbr_material",
       "title": "Create PBR Material",
       "description": "Creates a new PBR material (texture group with is_material=true) and optionally assigns textures to PBR channels. Use this for Minecraft Bedrock resource packs or any format supporting PBR.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Textures",
       "annotations": {
         "destructiveHint": true
@@ -5125,7 +5125,7 @@
       "name": "configure_material",
       "title": "Configure Material",
       "description": "Configures an existing PBR material's properties including channel assignments, uniform values, and subsurface scattering.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Textures",
       "annotations": {
         "destructiveHint": true
@@ -5256,8 +5256,8 @@
     {
       "name": "import_texture_set",
       "title": "Import Texture Set",
-      "description": "Imports a Minecraft Bedrock texture_set.json file and creates a PBR material with the associated textures.",
-      "status": "experimental",
+      "description": "Imports a Minecraft Bedrock texture_set.json material. Validates constants and decodes referenced PNG/TGA images before adding the material in one Undo step. Missing/invalid images and image paths already used in the project or set are rejected without changing the model. Configure existing materials instead of importing their images again.",
+      "status": "stable",
       "category": "Textures",
       "annotations": {
         "destructiveHint": true,
@@ -5288,7 +5288,7 @@
       "name": "assign_texture_channel",
       "title": "Assign Texture Channel",
       "description": "Assigns a texture to a specific PBR channel within a material.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Textures",
       "annotations": {
         "destructiveHint": true
@@ -5336,7 +5336,7 @@
       "name": "save_material_config",
       "title": "Save Material Config",
       "description": "Saves the material's texture_set.json file to disk (Bedrock format). Requires the color texture to have a valid file path.",
-      "status": "experimental",
+      "status": "stable",
       "category": "Textures",
       "annotations": {
         "destructiveHint": true,
@@ -5396,8 +5396,8 @@
     {
       "name": "trigger_action",
       "title": "Trigger Action",
-      "description": "Triggers an action in the Blockbench editor.",
-      "status": "experimental",
+      "description": "Triggers an available Blockbench Action. confirmDialog confirms only a new dialog opened synchronously by that action; pre-existing dialogs are left open. Async dialogs require a subsequent fill_dialog call.",
+      "status": "stable",
       "category": "UI Interaction",
       "annotations": {
         "destructiveHint": true,
@@ -5561,7 +5561,7 @@
       "name": "fill_dialog",
       "title": "Fill Dialog",
       "description": "Fills the dialog with the given values.",
-      "status": "experimental",
+      "status": "stable",
       "category": "UI Interaction",
       "annotations": {
         "destructiveHint": true,
@@ -5598,7 +5598,7 @@
       "name": "set_mesh_uv",
       "title": "Set Mesh UV",
       "description": "Sets UV coordinates for mesh faces or vertices.",
-      "status": "experimental",
+      "status": "stable",
       "category": "UV Mapping",
       "annotations": {
         "destructiveHint": true
@@ -5650,7 +5650,7 @@
       "name": "auto_uv_mesh",
       "title": "Auto UV Mesh",
       "description": "Automatically generates UV mapping for selected mesh faces.",
-      "status": "experimental",
+      "status": "stable",
       "category": "UV Mapping",
       "annotations": {
         "destructiveHint": true
@@ -5697,7 +5697,7 @@
       "name": "rotate_mesh_uv",
       "title": "Rotate Mesh UV",
       "description": "Rotates UV coordinates of selected mesh faces.",
-      "status": "experimental",
+      "status": "stable",
       "category": "UV Mapping",
       "annotations": {
         "destructiveHint": true

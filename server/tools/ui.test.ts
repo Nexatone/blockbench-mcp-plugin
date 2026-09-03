@@ -6,7 +6,7 @@ registerUITools();
 const globals = globalThis as unknown as Record<string, unknown>;
 const prior = Object.getOwnPropertyDescriptors(globalThis);
 afterEach(() => {
-  for (const key of ["Project", "Undo", "evalFixture"]) {
+  for (const key of ["Project", "Undo", "evalFixture", "Dialog", "BarItems", "Action", "Condition"]) {
     if (prior[key]) Object.defineProperty(globalThis, key, prior[key]);
     else delete globals[key];
   }
@@ -60,4 +60,28 @@ test("risky_eval rejects script errors for the MCP error boundary", async () => 
   globals.Undo = undefined;
   await expect(execute('throw new Error("script failure")')).rejects.toThrow("script failure");
   await expect(execute('Promise.reject(new Error("async failure"))')).rejects.toThrow("async failure");
+});
+
+test("trigger_action rejects unavailable actions before touching an existing dialog", async () => {
+  let confirmed = 0, triggered = 0;
+  class FixtureAction { condition = false; trigger() { triggered++; } }
+  globals.Action = FixtureAction;
+  globals.BarItems = { unavailable: new FixtureAction(), widget: {} };
+  globals.Condition = (condition: unknown) => Boolean(condition);
+  globals.Dialog = { open: { confirm() { confirmed++; } } };
+  const tool = getAllToolDefinitions().trigger_action;
+  await expect(tool.execute({ action: "unavailable" })).rejects.toThrow("unavailable");
+  await expect(tool.execute({ action: "widget" })).rejects.toThrow("not a triggerable action");
+  await expect(tool.execute({ action: "unavailable", confirmEvent: "null" })).rejects.toThrow("JSON object");
+  expect(confirmed).toBe(0);
+  expect(triggered).toBe(0);
+});
+
+test("fill_dialog rejects non-object JSON before changing or confirming the form", async () => {
+  let changes = 0;
+  globals.Dialog = { stack: [{}], open: { setFormValues() { changes++; }, confirm() { changes++; } } };
+  for (const values of ["null", "[]", "4", '"text"']) {
+    await expect(getAllToolDefinitions().fill_dialog.execute({ values })).rejects.toThrow("JSON object");
+  }
+  expect(changes).toBe(0);
 });

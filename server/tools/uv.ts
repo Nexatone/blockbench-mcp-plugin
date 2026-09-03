@@ -1,10 +1,10 @@
-import { withMeshSelection } from "@/lib/geometry";
+import { validateMeshComponents, withMeshSelection } from "@/lib/geometry";
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { findMeshOrThrow, getMeshOrSelected } from "@/lib/util";
-import { STATUS_EXPERIMENTAL } from "@/lib/constants";
+import { STATUS_STABLE } from "@/lib/constants";
 import {
   meshIdSchema,
   meshIdOptionalSchema,
@@ -65,7 +65,7 @@ export const uvToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: setMeshUvParametersSchema,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "auto_uv_mesh",
@@ -75,7 +75,7 @@ export const uvToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: autoUvMeshParametersSchema,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "rotate_mesh_uv",
@@ -85,7 +85,7 @@ export const uvToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: rotateMeshUvParametersSchema,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
 ];
 
@@ -96,16 +96,14 @@ export function registerUVTools() {
       ...uvToolDocs[0],
       async execute({ mesh_id, face_key, uv_mapping }) {
         const mesh = findMeshOrThrow(mesh_id);
-
-        Undo.initEdit({
-          elements: [mesh],
-          uv_only: true,
-        });
-
         const face = mesh.faces[face_key];
-        if (!face) {
+        if (!Object.hasOwn(mesh.faces, face_key)) {
           throw new Error(`Face with key "${face_key}" not found in mesh.`);
         }
+        for (const key of Object.keys(uv_mapping)) {
+          if (!face.vertices.includes(key)) throw new Error(`Vertex "${key}" is not part of face "${face_key}".`);
+        }
+        Undo.initEdit({ elements: [mesh], uv_only: true });
 
         // Set UV coordinates for each vertex
         Object.entries(uv_mapping).forEach(([vkey, uv]) => {
@@ -131,18 +129,21 @@ export function registerUVTools() {
       ...uvToolDocs[1],
       async execute({ mesh_id, mode, faces }) {
         const mesh = getMeshOrSelected(mesh_id);
+        const selectedFaces = validateMeshComponents(mesh, faces ?? UVEditor.getSelectedFaces(mesh), "faces");
+
+        // The native view projection action owns its Undo transaction.
+        if (mode === "project") {
+          if (!Preview.selected) throw new Error("No preview available for projection.");
+          withMeshSelection(mesh, selectedFaces, () => BarItems.uv_project_from_view.click());
+          return `Applied ${mode} UV mapping to ${selectedFaces.length} faces of mesh "${mesh.name}"`;
+        }
 
         Undo.initEdit({
           elements: [mesh],
           uv_only: true,
         });
 
-        const selectedFaces = faces || UVEditor.getSelectedFaces(mesh);
-
-        if (mode === "project") {
-          // Use project from view
-          withMeshSelection(mesh, selectedFaces, () => BarItems.uv_project_from_view.click());
-        } else {
+        {
           // Manual UV mapping based on mode
           selectedFaces.forEach((fkey) => {
             const face = mesh.faces[fkey];
@@ -198,13 +199,13 @@ export function registerUVTools() {
       ...uvToolDocs[2],
       async execute({ mesh_id, angle, faces }) {
         const mesh = getMeshOrSelected(mesh_id);
+        const affected = validateMeshComponents(mesh, faces ?? [...mesh.getSelectedFaces()], "faces");
 
         Undo.initEdit({
           elements: [mesh],
           uv_only: true,
         });
 
-        const affected = faces ?? [...mesh.getSelectedFaces()];
         withMeshSelection(mesh, affected, () => UVEditor.rotate(parseInt(angle)));
 
         Undo.finishEdit("Rotate mesh UV");
