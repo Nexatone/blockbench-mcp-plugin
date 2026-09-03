@@ -8,6 +8,16 @@ export function meshSelectionState(): Record<string, MeshComponentSelection> {
   return Project!.mesh_selection as unknown as Record<string, MeshComponentSelection>;
 }
 
+/** Resolve every component before opening an Undo edit. */
+export function validateMeshComponents(mesh: Mesh, keys: string[], kind: "faces" | "vertices"): string[] {
+  const unique = [...new Set(keys)];
+  if (!unique.length) throw new Error(`No ${kind} specified or selected on mesh "${mesh.name}".`);
+  for (const key of unique) {
+    if (!Object.hasOwn(mesh[kind], key)) throw new Error(`Unknown ${kind} key "${key}" on mesh "${mesh.name}".`);
+  }
+  return unique;
+}
+
 export function elementTree(element: OutlinerNode): OutlinerElement[] {
   return outlinerTree(element).filter(node => !(node instanceof Group)) as OutlinerElement[];
 }

@@ -1,11 +1,13 @@
 import { editTextureSelection, strokePoints } from "@/lib/textureSelection";
+import { validatePaintPoints, nativePaintStroke, blendPaintPixel, editPaintPixels } from "@/lib/paintOperations";
+import { colorFillMask } from "@/lib/fillMask";
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 // Blockbench supplies tinycolor globally; importing it would request an unsupported native module.
 declare const tinycolor: typeof import("tinycolor2");
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { STATUS_EXPERIMENTAL } from "@/lib/constants";
+import { STATUS_STABLE } from "@/lib/constants";
 import { getProjectTexture, getAndActivateTexture, setBarItemValue } from "@/lib/util";
 import {
   textureIdOptionalSchema,
@@ -36,7 +38,7 @@ export const paintFillToolParameters = z.object({
     .min(0)
     .max(100)
     .optional()
-    .describe("Color tolerance for fill."),
+    .describe("Maximum RGBA channel distance in percent (0–100), for color/color_connected fills. Other fill modes ignore color tolerance."),
   fill_mode: fillModeEnum
     .optional()
     .default("color_connected")
@@ -137,8 +139,8 @@ export const eraserToolParameters = z.object({
 export const paintSettingsParameters = z.object({
   mirror_painting: z
     .object({
-      enabled: z.boolean().describe("Enable mirror painting."),
-      axis: z.array(axisEnum).optional().describe("Mirror axes."),
+      enabled: z.boolean().describe("Enable mirror painting. Supplied options are updated even when disabled."),
+      axis: z.array(axisEnum).optional().describe("Replaces enabled mirror axes; an empty array disables all axes. Omit to preserve them."),
       texture: z.boolean().optional().describe("Enable texture mirroring."),
       texture_center: coordinateSchema
         .extend({
@@ -234,7 +236,7 @@ export const textureSelectionParameters = z.object({
       "contract_selection",
       "feather_selection",
     ])
-    .describe("Selection action to perform."),
+    .describe("Binary selection action. feather_selection is deprecated and returns an explicit unsupported-operation error; use brush softness for soft edges."),
   texture_id: textureIdOptionalSchema,
   coordinates: z
     .object({
@@ -288,13 +290,13 @@ export const textureLayerManagementParameters = z.object({
 export const paintToolDocs: ToolSpec[] = [
   {
     name: "paint_fill_tool",
-    description: "Uses the fill/bucket tool to fill areas with color.",
+    description: "Fills the active texture layer. Color modes match RGBA pixels globally or through four-connected neighbors, respecting selection and alpha lock; they do not mirror strokes or use color-erase mode. Other modes use native 2D fill behavior: face/element use the texture selection without a viewport face; selected_elements uses selected model UVs. One Undo step.",
     annotations: {
       title: "Paint Fill Tool",
       destructiveHint: true,
     },
     parameters: paintFillToolParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "draw_shape_tool",
@@ -304,17 +306,17 @@ export const paintToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: drawShapeToolParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "gradient_tool",
-    description: "Applies gradients to textures.",
+    description: "Applies a linear two-color gradient in texture coordinates to the active layer and selection. Endpoints are pixel coordinates; colors extend beyond them. Honors opacity, blend mode and alpha lock. Does not mirror strokes or use color-erase mode. One Undo step.",
     annotations: {
       title: "Gradient Tool",
       destructiveHint: true,
     },
     parameters: gradientToolParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "color_picker_tool",
@@ -325,7 +327,7 @@ export const paintToolDocs: ToolSpec[] = [
       readOnlyHint: true,
     },
     parameters: colorPickerToolParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "copy_brush_tool",
@@ -335,7 +337,7 @@ export const paintToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: copyBrushToolParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "eraser_tool",
@@ -345,7 +347,7 @@ export const paintToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: eraserToolParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "paint_settings",
@@ -355,7 +357,7 @@ export const paintToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: paintSettingsParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "paint_with_brush",
@@ -366,7 +368,7 @@ export const paintToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: paintWithBrushParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "create_brush_preset",
@@ -376,7 +378,7 @@ export const paintToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: createBrushPresetParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "load_brush_preset",
@@ -386,18 +388,18 @@ export const paintToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: loadBrushPresetParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "texture_selection",
     description:
-      "Creates, modifies, or manipulates texture selections for painting.",
+      "Creates and modifies binary texture selections without a bitmap Undo entry. feather_selection is deprecated and returns an explicit unsupported-operation error; use brush softness for soft edges.",
     annotations: {
       title: "Texture Selection",
       destructiveHint: true,
     },
     parameters: textureSelectionParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "texture_layer_management",
@@ -407,7 +409,7 @@ export const paintToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: textureLayerManagementParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
 ];
 
@@ -428,12 +430,19 @@ export function registerPaintTools() {
       }) {
         const texture = getAndActivateTexture(texture_id);
 
-        Undo.initEdit({
-          textures: [texture],
-          bitmap: true,
-        });
-
-        // Apply settings
+        validatePaintPoints(texture, [{ x, y }]);
+        if (fill_mode === "color" || fill_mode === "color_connected") {
+          const active = texture.getActiveCanvas();
+          const { canvas, ctx } = active;
+          const offset = (active as typeof active & { offset: number[] }).offset ?? [0, 0];
+          const source = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+          const mask = colorFillMask(source, canvas.width, canvas.height, Math.floor(x - offset[0]), Math.floor(y - offset[1]), tolerance ?? 0, fill_mode === "color_connected", (px, py) => Boolean(texture.selection.get(px + offset[0], py + offset[1])));
+          const fill = tinycolor(color).toRgb();
+          editPaintPixels(texture, "Fill texture", (base, px, py) => mask[(py - offset[1]) * canvas.width + px - offset[0]] ? blendPaintPixel(base, fill, opacity / 255, blend_mode ?? "default") : base);
+          return `Filled area at (${x}, ${y}) on texture "${texture.name}"`;
+        }
+        (BarItems.fill_tool as Tool).select();
+        // Apply settings to the selected tool, whose slider values are per-tool.
         if (color) {
           ColorPanel.set(color);
         }
@@ -447,15 +456,7 @@ export function registerPaintTools() {
           setBarItemValue("blend_mode", blend_mode);
         }
 
-        // Select fill tool
-        // @ts-ignore
-        BarItems.fill_tool.select();
-
-        // Perform fill
-        Painter.startPaintTool(texture, x, y, {}, { shiftKey: false });
-        Painter.stopPaintTool();
-
-        Undo.finishEdit("Fill tool");
+        nativePaintStroke(texture, { x, y }, () => {});
         Canvas.updateAll();
 
         return `Filled area at (${x}, ${y}) on texture "${texture.name}"`;
@@ -480,11 +481,8 @@ export function registerPaintTools() {
       }) {
         const texture = getAndActivateTexture(texture_id);
 
-        Undo.initEdit({
-          textures: [texture],
-          bitmap: true,
-        });
-
+        validatePaintPoints(texture, [start, end]);
+        (BarItems.draw_shape_tool as Tool).select();
         // Apply settings
         if (color) {
           ColorPanel.set(color);
@@ -502,16 +500,7 @@ export function registerPaintTools() {
         // Set shape type
         setBarItemValue("draw_shape_type", shape);
 
-        // Select draw shape tool
-        // @ts-ignore
-        BarItems.draw_shape_tool.select();
-
-        // Draw shape
-        Painter.startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
-        Painter.useShapeTool(texture, end.x, end.y, {});
-        Painter.stopPaintTool();
-
-        Undo.finishEdit("Draw shape");
+        nativePaintStroke(texture, start, () => Painter.useShapeTool(texture, end.x, end.y, {}));
         Canvas.updateAll();
 
         return `Drew ${shape} from (${start.x}, ${start.y}) to (${end.x}, ${end.y}) on texture "${texture.name}"`;
@@ -535,34 +524,17 @@ export function registerPaintTools() {
       }) {
         const texture = getAndActivateTexture(texture_id);
 
-        Undo.initEdit({
-          textures: [texture],
-          bitmap: true,
+        validatePaintPoints(texture, [start, end]);
+        const first = tinycolor(start_color), last = tinycolor(end_color);
+        if (!first.isValid() || !last.isValid()) throw new Error("Both gradient colors must be valid colors.");
+        const dx = end.x - start.x, dy = end.y - start.y, length2 = dx * dx + dy * dy;
+        if (!length2) throw new Error("Gradient start and end must differ.");
+        const a = first.toRgb(), b = last.toRgb();
+        editPaintPixels(texture, "Apply gradient", (base, x, y) => {
+          const t = Math.max(0, Math.min(1, ((x - start.x) * dx + (y - start.y) * dy) / length2));
+          const color = { r: a.r + (b.r - a.r) * t, g: a.g + (b.g - a.g) * t, b: a.b + (b.b - a.b) * t, a: a.a + (b.a - a.a) * t };
+          return blendPaintPixel(base, color, opacity / 255, blend_mode ?? "default");
         });
-
-        // Apply settings
-        ColorPanel.set(start_color);
-        // @ts-ignore
-        ColorPanel.set(end_color, true); // Set as secondary color
-
-        if (opacity !== undefined) {
-          setBarItemValue("slider_brush_opacity", opacity);
-        }
-        if (blend_mode) {
-          setBarItemValue("blend_mode", blend_mode);
-        }
-
-        // Select gradient tool
-        // @ts-ignore
-        BarItems.gradient_tool.select();
-
-        // Apply gradient
-        Painter.startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
-        Painter.useGradientTool(texture, end.x, end.y, {});
-        Painter.stopPaintTool();
-
-        Undo.finishEdit("Apply gradient");
-        Canvas.updateAll();
 
         return `Applied gradient from (${start.x}, ${start.y}) to (${end.x}, ${end.y}) on texture "${texture.name}"`;
       },
@@ -576,17 +548,20 @@ export function registerPaintTools() {
       ...paintToolDocs[3],
       async execute({ texture_id, x, y, set_as_secondary, pick_opacity }) {
         const texture = getAndActivateTexture(texture_id);
-
-        // Pick color
-        Painter.colorPicker(texture, x, y, { button: set_as_secondary ? 2 : 0 });
-
-        // Get the picked color
-        const color = ColorPanel.get();
+        if (![x,y].every(Number.isFinite) || x < 0 || y < 0 || x >= texture.width || y >= texture.height) throw new Error("Pick coordinates must be inside the texture.");
+        const layer = texture.selected_layer;
+        const readPixel = (ctx: CanvasRenderingContext2D, px: number, py: number) => ctx.getImageData(Math.floor(px), Math.floor(py), 1, 1).data;
+        let pixel = layer && Settings.get("pick_combined_color") === false
+          ? readPixel(texture.getActiveCanvas().ctx, x - layer.offset[0], y - layer.offset[1])
+          : readPixel(texture.ctx, x, y);
+        if (pixel[3] === 0 && layer) pixel = readPixel(texture.ctx, x, y);
+        const picked = tinycolor({ r: pixel[0], g: pixel[1], b: pixel[2], a: pixel[3] / 255 });
+        ColorPanel.set(picked, set_as_secondary, false);
+        const color = ColorPanel.get(set_as_secondary);
 
         if (pick_opacity) {
           // Get pixel color with alpha
-          const pixelColor = Painter.getPixelColor(texture.ctx, x, y);
-          const opacity = Math.floor(pixelColor.getAlpha() * 255);
+          const opacity = pixel[3];
 
           // Apply opacity to brush tools
           for (let id in BarItems) {
@@ -597,6 +572,7 @@ export function registerPaintTools() {
               tool.tool_settings.brush_opacity = opacity;
             }
           }
+          (BarItems.slider_brush_opacity as NumSlider).update();
 
           return `Picked color ${color} with opacity ${opacity} from (${x}, ${y}) on texture "${texture.name}"`;
         }
@@ -614,11 +590,8 @@ export function registerPaintTools() {
       async execute({ texture_id, source, target, brush_size, opacity, mode }) {
         const texture = getAndActivateTexture(texture_id);
 
-        Undo.initEdit({
-          textures: [texture],
-          bitmap: true,
-        });
-
+        validatePaintPoints(texture, [source, target]);
+        (BarItems.copy_brush as Tool).select();
         // Apply settings
         if (brush_size !== undefined) {
           setBarItemValue("slider_brush_size", brush_size);
@@ -630,20 +603,14 @@ export function registerPaintTools() {
           setBarItemValue("copy_brush_mode", mode);
         }
 
-        // Select copy brush tool
-        // @ts-ignore
-        BarItems.copy_brush.select();
-
         // Set source point (Ctrl+click equivalent)
-        Painter.startPaintTool(texture, source.x, source.y, {}, {
+        Painter.startPaintTool(texture, source.x, source.y, undefined, {
           ctrlOrCmd: true,
         });
-
-        // Apply at target point
-        Painter.startPaintTool(texture, target.x, target.y, {}, { shiftKey: false });
         Painter.stopPaintTool();
 
-        Undo.finishEdit("Copy brush");
+        // Apply at target point
+        nativePaintStroke(texture, target, () => {});
         Canvas.updateAll();
 
         return `Copied from (${source.x}, ${source.y}) to (${target.x}, ${target.y}) on texture "${texture.name}"`;
@@ -667,11 +634,8 @@ export function registerPaintTools() {
       }) {
         const texture = getAndActivateTexture(texture_id);
 
-        Undo.initEdit({
-          textures: [texture],
-          bitmap: true,
-        });
-
+        validatePaintPoints(texture, coordinates);
+        (BarItems.eraser as Tool).select();
         // Apply settings
         if (brush_size !== undefined) {
           setBarItemValue("slider_brush_size", brush_size);
@@ -686,27 +650,9 @@ export function registerPaintTools() {
           setBarItemValue("brush_shape", shape);
         }
 
-        // Select eraser tool
-        // @ts-ignore
-        BarItems.eraser.select();
-
-        // Erase at coordinates
-        for (let i = 0; i < coordinates.length; i++) {
-          const coord = coordinates[i];
-
-          if (i === 0 || !connect_strokes) {
-            // Start new stroke
-            Painter.startPaintTool(texture, coord.x, coord.y, {}, { shiftKey: false });
-          } else {
-            // Continue stroke
-            Painter.movePaintTool(texture, coord.x, coord.y, {});
-          }
-        }
-
-        // Finish erasing
-        Painter.stopPaintTool();
-
-        Undo.finishEdit("Erase texture");
+        nativePaintStroke(texture, coordinates[0], () => {
+          for (const coord of coordinates.slice(1)) Painter.movePaintTool(texture, coord.x, coord.y, {}, !connect_strokes);
+        });
         Canvas.updateAll();
 
         return `Erased ${coordinates.length} points on texture "${texture.name}"`;
@@ -743,18 +689,11 @@ export function registerPaintTools() {
           Painter.mirror_painting = mirror_painting.enabled;
           messages.push(`Mirror painting: ${mirror_painting.enabled}`);
 
-          if (
-            mirror_painting.enabled &&
-            (mirror_painting.axis ||
-              mirror_painting.texture ||
-              mirror_painting.texture_center)
-          ) {
+          {
             // @ts-ignore
             const options = Painter.mirror_painting_options;
             if (mirror_painting.axis) {
-              mirror_painting.axis.forEach((axis) => {
-                options[axis] = true;
-              });
+              for (const axis of ["x", "y", "z"] as const) options[axis] = mirror_painting.axis.includes(axis);
             }
             if (mirror_painting.texture !== undefined) {
               options.texture = mirror_painting.texture;
@@ -984,6 +923,7 @@ export function registerPaintTools() {
         if (action === "rename_layer" && !layer_name) throw new Error("New layer name required.");
         if (action === "move_layer" && (target_index === undefined || target_index < 0 || target_index >= texture.layers.length)) throw new Error("Target layer index is out of range.");
         if (action === "flatten_layers" && !texture.layers_enabled) throw new Error("Texture has no layers to flatten.");
+        if (action === "merge_down" && texture.layers.indexOf(TextureLayer.selected) <= 0) throw new Error("No layer below the selected layer to merge into.");
 
         Undo.initEdit({
           textures: [texture],

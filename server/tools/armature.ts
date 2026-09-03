@@ -4,7 +4,7 @@ import { getAnimationClass } from "@/lib/animation";
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { STATUS_STABLE } from "@/lib/constants";
 import {
   elementIdSchema,
   vector3Schema,
@@ -316,7 +316,7 @@ export const armatureToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: removeArmatureParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "update_armature",
@@ -368,7 +368,7 @@ export const armatureToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: removeArmatureBoneParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "update_armature_bone",
@@ -388,7 +388,7 @@ export const armatureToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: updateArmatureBonesBatchParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "select_armature_bones",
@@ -430,7 +430,7 @@ export const armatureToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: setVertexWeightsBatchParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
   {
     name: "clear_vertex_weights",
@@ -440,7 +440,7 @@ export const armatureToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: clearVertexWeightsParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
 ];
 
@@ -506,7 +506,7 @@ export function registerArmatureTools() {
         visibility,
         locked,
       });
-      armature.addTo(Outliner.root as any);
+      armature.addTo("root");
       armature.isOpen = true;
       armature.createUniqueName();
       armature.init();
@@ -963,6 +963,10 @@ export function registerArmatureTools() {
         throw new Error("No mesh found. Provide mesh_id or select a mesh.");
       }
 
+      for (const key of Object.keys(weights)) {
+        if (!Object.hasOwn(mesh.vertices, key)) throw new Error(`Vertex "${key}" not found in mesh "${mesh.name}".`);
+      }
+
       Undo.initEdit({ elements: [bone] });
 
       let count = 0;
@@ -1015,9 +1019,15 @@ export function registerArmatureTools() {
 
       let count = 0;
       const meshPrefix = mesh.uuid.substring(0, 6) + ":";
-
-      for (const key in bone.vertex_weights) {
+      // Include stale entries for vertices removed since weights were assigned.
+      for (const key of Object.keys(bone.vertex_weights)) {
         if (key.startsWith(meshPrefix)) {
+          delete bone.vertex_weights[key];
+          count++;
+        }
+      }
+      for (const key of Object.keys(mesh.vertices)) {
+        if (Object.hasOwn(bone.vertex_weights, key)) {
           delete bone.vertex_weights[key];
           count++;
         }

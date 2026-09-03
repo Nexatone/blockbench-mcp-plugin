@@ -94,6 +94,20 @@ ignored `.verification/`. They preserve existing projects; avoid simultaneous
 manual model edits. Reload the local plugin after rebuilding. A matching version
 number alone does not identify the running build.
 
+`bun run test:stability:live` exercises promoted experimental tools, including
+Undo/Redo, invalid-input atomicity, save/reopen, native normals and dialogs. It
+requires the current build loaded and no unrelated dialogs or simultaneous
+editor edits. It compares every original project's model, saved flag and Undo
+history, and writes `.verification/experimental-stability-live.json` with build
+provenance. See [the stability review](docs/experimental-review.md) for coverage
+and the remaining promotion plan.
+
+`bun run test:remaining:live` covers the second stabilization pass: curve and
+batch animation operations, painting/settings/selections, and texture-set disk
+operations. It verifies native results and project preservation and restores
+the paint settings it changes. Hytale is explicitly deferred; these suites do
+not install optional plugins.
+
 The server accepts loopback access only. Network settings require plugin reload.
 Development prompts come from the bundled generated manifest; re-run `bun run dev`
 after prompt edits. Production falls back to bundled prompts when CDN access fails.

@@ -2,7 +2,7 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { STATUS_STABLE } from "@/lib/constants";
 
 export const undoParameters = z.object({
   steps: z
@@ -84,13 +84,13 @@ export const historyToolDocs: ToolSpec[] = [
   {
     name: "save_checkpoint",
     description:
-      "Inserts a named marker into the undo history. The marker can later be located with `get_undo_stack` so the agent knows how many times to call `undo` to return to this state. Does not modify the project.",
+      "Inserts a named marker into the undo history without changing model data or the saved flag. Locate it with `get_undo_stack`. Like any new history entry, it discards the redo branch and counts toward the undo limit; it is not a persistent backup.",
     annotations: {
       title: "Save Checkpoint",
       destructiveHint: false,
     },
     parameters: saveCheckpointParameters,
-    status: STATUS_EXPERIMENTAL,
+    status: STATUS_STABLE,
   },
 ];
 
@@ -221,12 +221,10 @@ export function registerHistoryTools() {
   createTool(historyToolDocs[3].name, {
     ...historyToolDocs[3],
     async execute({ name }) {
+      if (!Project) throw new Error("Open a project before creating a checkpoint.");
+      if (Undo.current_save) throw new Error("Finish the current edit before creating a checkpoint.");
       const label = `[checkpoint] ${name}`;
-      Undo.initEdit({
-        elements: [],
-        outliner: true,
-        collections: [],
-      });
+      Undo.initEdit({ keep_saved: true });
       Undo.finishEdit(label);
 
       return JSON.stringify(

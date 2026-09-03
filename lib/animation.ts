@@ -30,6 +30,17 @@ export function handleVector(value: number | number[]): ArrayVector3 {
   return (Array.isArray(value) ? [...value] : [value, value, value]) as ArrayVector3;
 }
 
+/** Selection is UI state; it must not add an animation edit or clear earlier picks. */
+export function selectAnimationKeyframes(keyframes: _Keyframe[]): void {
+  for (const keyframe of Timeline.selected) keyframe.selected = false;
+  Timeline.selected.empty();
+  for (const keyframe of keyframes) {
+    keyframe.selected = true;
+    Timeline.selected.push(keyframe);
+  }
+  updateKeyframeSelection();
+}
+
 export const MAX_BAKED_KEYFRAMES = 5000;
 export function bakeTimes(start: number, end: number, interval: number): number[] {
   if (![start, end, interval].every(Number.isFinite) || start < 0 || end < start || interval <= 0) {

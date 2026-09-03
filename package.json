@@ -1,6 +1,6 @@
 {
   "name": "blockbench-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Blockbench MCP server plugin",
   "keywords": [
     "Blockbench",
@@ -13,6 +13,8 @@
   "scripts": {
     "test": "bun test",
     "test:live": "bun tests/live/bug-review.mjs",
+    "test:stability:live": "bun tests/live/experimental-stability.mjs",
+    "test:remaining:live": "bun tests/live/remaining-experiments.mjs",
     "typecheck": "tsc --noEmit",
     "prompts:build": "bun run ./build/generate-manifest.ts",
     "dev": "bun run prompts:build && bun run ./build --sourcemap",

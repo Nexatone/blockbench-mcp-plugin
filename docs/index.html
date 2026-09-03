@@ -11,7 +11,7 @@
     <nav class="sidebar">
       <div class="sidebar-brand">
         <h1>Blockbench MCP</h1>
-        <p>v1.0.0 — API Reference</p>
+        <p>v1.1.0 — API Reference</p>
       </div>
 
       <input id="search" type="text" placeholder="Search tools..." class="search-input" />
@@ -47,9 +47,9 @@
     <main class="main">
       <header class="page-header">
         <h1>Blockbench MCP Plugin</h1>
-        <p class="subtitle">API Reference — v1.0.0</p>
+        <p class="subtitle">API Reference — v1.1.0</p>
         <nav class="stats">
-          <a href="#tools"><strong>106</strong> tools (39 stable, 67 experimental)</a>
+          <a href="#tools"><strong>106</strong> tools (91 stable, 15 experimental)</a>
           <a href="#prompts"><strong>6</strong> prompts</a>
           <a href="#resources"><strong>16</strong> resources</a>
         </nav>
@@ -57,10 +57,10 @@
 
       <section id="install" class="doc-section">
         <h2>Installation</h2>
-<ul>
-<li><a href="https://jasonjgardner.github.io/blockbench-mcp-plugin/mcp.js">Stable</a></li>
-<li><a href="https://jasonjgardner.github.io/blockbench-mcp-plugin/nightly/mcp.js">Latest</a></li>
-</ul>
+<p>Use the <a href="https://itsjosshy.github.io/blockbench-mcp-plugin/nightly/mcp.js">maintained plugin deployment</a>.
+For unmerged changes, build and load this checkout's <code>dist/mcp.js</code> instead.
+See <a href="../../README.md">README</a> for client configuration and loading instructions.
+The default local endpoint is <code>http://127.0.0.1:3000/bb-mcp</code>.</p>
 
       </section>
 
@@ -251,12 +251,12 @@
       <div class="card-header">
         <h3 class="card-name">set_camera_angle</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
       <p class="card-title">Set Camera Angle</p>
-      <p class="card-desc">Sets the camera angle to the specified value.</p>
+      <p class="card-desc">Sets the selected preview camera and returns a viewport screenshot. Position and target use model units; rotation uses degrees in ZYX order. Target takes precedence over rotation. Projection 'unset' preserves the current projection. Changes editor view state, without creating a model Undo entry.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -347,7 +347,7 @@
       <div class="card-header">
         <h3 class="card-name">manage_keyframes</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -396,12 +396,12 @@
       <div class="card-header">
         <h3 class="card-name">animation_graph_editor</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
       <p class="card-title">Animation Graph Editor</p>
-      <p class="card-desc">Controls animation curves in the graph editor for fine-tuning animations.</p>
+      <p class="card-desc">Controls native keyframe interpolation. Interpolation type applies to all axes; axis scopes generated Bezier handles. Easing/custom curves require numeric values on affected axes; linear/smooth/stepped retain Molang. Ranges select complete keys, so adjacent segments may change too.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -431,7 +431,7 @@
       <td class="col-name">axis</td>
       <td class="col-type">&quot;x&quot; | &quot;y&quot; | &quot;z&quot; | string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Axis to modify curves for. <span class="param-meta">(default: <code>&quot;all&quot;</code>)</span></td>
+      <td class="col-desc">Axes for generated Bezier handles. Native interpolation type is shared by all axes of each keyframe. <span class="param-meta">(default: <code>&quot;all&quot;</code>)</span></td>
     </tr><tr>
       <td class="col-name">action</td>
       <td class="col-type">&quot;smooth&quot; | &quot;linear&quot; | &quot;ease_in&quot; | &quot;ease_out&quot; | &quot;ease_in_out&quot; | &quot;stepped&quot; | &quot;custom&quot;</td>
@@ -489,7 +489,7 @@
       <div class="card-header">
         <h3 class="card-name">animation_timeline</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -543,12 +543,12 @@
       <div class="card-header">
         <h3 class="card-name">batch_keyframe_operations</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
       <p class="card-title">Batch Keyframe Operations</p>
-      <p class="card-desc">Performs batch operations on multiple keyframes at once.</p>
+      <p class="card-desc">Operates on active-animation keys, including collapsed animators. Time edits reject negative times and same-channel collisions. Scale changes time and Bezier time handles; reverse uses native key/data-point/handle reversal semantics. Bake replaces each selected transform channel's span with numeric linear samples including its end. Mirror/smooth/bake/value offsets require transform keys.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -563,7 +563,7 @@
       <td class="col-name">selection</td>
       <td class="col-type">&quot;all&quot; | &quot;selected&quot; | &quot;range&quot; | &quot;pattern&quot;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Which keyframes to operate on. <span class="param-meta">(default: <code>&quot;selected&quot;</code>)</span></td>
+      <td class="col-desc">Selection within the active animation, including collapsed/hidden animators. Selected uses its currently selected keys. <span class="param-meta">(default: <code>&quot;selected&quot;</code>)</span></td>
     </tr><tr>
       <td class="col-name">range</td>
       <td class="col-type">object</td>
@@ -592,7 +592,7 @@
       <div class="card-header">
         <h3 class="card-name">animation_copy_paste</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -726,7 +726,7 @@
       <div class="card-header">
         <h3 class="card-name">remove_armature</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -931,7 +931,7 @@
       <div class="card-header">
         <h3 class="card-name">remove_armature_bone</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -1039,7 +1039,7 @@
       <div class="card-header">
         <h3 class="card-name">update_armature_bones_batch</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -1205,7 +1205,7 @@
       <div class="card-header">
         <h3 class="card-name">set_vertex_weights_batch</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -1244,7 +1244,7 @@
       <div class="card-header">
         <h3 class="card-name">clear_vertex_weights</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -1281,7 +1281,7 @@
       <div class="card-header">
         <h3 class="card-name">remove_element</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -1413,7 +1413,7 @@
       <div class="card-header">
         <h3 class="card-name">duplicate_element</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -1452,7 +1452,7 @@
       <div class="card-header">
         <h3 class="card-name">rename_element</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -1669,7 +1669,7 @@
       <div class="card-header">
         <h3 class="card-name">export_model</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-openworld">open-world</span>
         </div>
       </div>
@@ -1803,12 +1803,12 @@
       <div class="card-header">
         <h3 class="card-name">save_checkpoint</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           
         </div>
       </div>
       <p class="card-title">Save Checkpoint</p>
-      <p class="card-desc">Inserts a named marker into the undo history. The marker can later be located with `get_undo_stack` so the agent knows how many times to call `undo` to return to this state. Does not modify the project.</p>
+      <p class="card-desc">Inserts a named marker into the undo history without changing model data or the saved flag. Locate it with `get_undo_stack`. Like any new history entry, it discards the redo branch and counts toward the undo limit; it is not a persistent backup.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1901,7 +1901,7 @@
       <div class="card-header">
         <h3 class="card-name">set_face_material_instance</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -1954,7 +1954,7 @@
       <div class="card-header">
         <h3 class="card-name">bulk_set_material_instances</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -1983,7 +1983,7 @@
       <div class="card-header">
         <h3 class="card-name">clear_material_instances</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2025,7 +2025,7 @@
       <div class="card-header">
         <h3 class="card-name">place_mesh</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2064,7 +2064,7 @@
       <div class="card-header">
         <h3 class="card-name">extrude_mesh</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2103,7 +2103,7 @@
       <div class="card-header">
         <h3 class="card-name">subdivide_mesh</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2176,7 +2176,7 @@
       <div class="card-header">
         <h3 class="card-name">select_mesh_elements</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2220,7 +2220,7 @@
       <div class="card-header">
         <h3 class="card-name">move_mesh_vertices</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2259,7 +2259,7 @@
       <div class="card-header">
         <h3 class="card-name">delete_mesh_elements</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2298,7 +2298,7 @@
       <div class="card-header">
         <h3 class="card-name">merge_mesh_vertices</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2337,7 +2337,7 @@
       <div class="card-header">
         <h3 class="card-name">create_mesh_face</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2376,7 +2376,7 @@
       <div class="card-header">
         <h3 class="card-name">create_cylinder</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2452,12 +2452,12 @@
       <div class="card-header">
         <h3 class="card-name">paint_fill_tool</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
       <p class="card-title">Paint Fill Tool</p>
-      <p class="card-desc">Uses the fill/bucket tool to fill areas with color.</p>
+      <p class="card-desc">Fills the active texture layer. Color modes match RGBA pixels globally or through four-connected neighbors, respecting selection and alpha lock; they do not mirror strokes or use color-erase mode. Other modes use native 2D fill behavior: face/element use the texture selection without a viewport face; selected_elements uses selected model UVs. One Undo step.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2497,7 +2497,7 @@
       <td class="col-name">tolerance</td>
       <td class="col-type">number</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Color tolerance for fill. <span class="param-meta">[min: 0, max: 100]</span></td>
+      <td class="col-desc">Maximum RGBA channel distance in percent (0–100), for color/color_connected fills. Other fill modes ignore color tolerance. <span class="param-meta">[min: 0, max: 100]</span></td>
     </tr><tr>
       <td class="col-name">fill_mode</td>
       <td class="col-type">&quot;color&quot; | &quot;color_connected&quot; | &quot;face&quot; | &quot;element&quot; | &quot;selected_elements&quot; | &quot;selection&quot;</td>
@@ -2516,7 +2516,7 @@
       <div class="card-header">
         <h3 class="card-name">draw_shape_tool</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2580,12 +2580,12 @@
       <div class="card-header">
         <h3 class="card-name">gradient_tool</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
       <p class="card-title">Gradient Tool</p>
-      <p class="card-desc">Applies gradients to textures.</p>
+      <p class="card-desc">Applies a linear two-color gradient in texture coordinates to the active layer and selection. Endpoints are pixel coordinates; colors extend beyond them. Honors opacity, blend mode and alpha lock. Does not mirror strokes or use color-erase mode. One Undo step.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2639,7 +2639,7 @@
       <div class="card-header">
         <h3 class="card-name">color_picker_tool</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-readonly">read-only</span>
         </div>
       </div>
@@ -2688,7 +2688,7 @@
       <div class="card-header">
         <h3 class="card-name">copy_brush_tool</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2742,7 +2742,7 @@
       <div class="card-header">
         <h3 class="card-name">eraser_tool</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2801,7 +2801,7 @@
       <div class="card-header">
         <h3 class="card-name">paint_settings</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2875,7 +2875,7 @@
       <div class="card-header">
         <h3 class="card-name">paint_with_brush</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2919,7 +2919,7 @@
       <div class="card-header">
         <h3 class="card-name">create_brush_preset</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -2983,7 +2983,7 @@
       <div class="card-header">
         <h3 class="card-name">load_brush_preset</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -3012,12 +3012,12 @@
       <div class="card-header">
         <h3 class="card-name">texture_selection</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
       <p class="card-title">Texture Selection</p>
-      <p class="card-desc">Creates, modifies, or manipulates texture selections for painting.</p>
+      <p class="card-desc">Creates and modifies binary texture selections without a bitmap Undo entry. feather_selection is deprecated and returns an explicit unsupported-operation error; use brush softness for soft edges.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3032,7 +3032,7 @@
       <td class="col-name">action</td>
       <td class="col-type">&quot;select_rectangle&quot; | &quot;select_ellipse&quot; | &quot;select_all&quot; | &quot;clear_selection&quot; | &quot;invert_selection&quot; | &quot;expand_selection&quot; | &quot;contract_selection&quot; | &quot;feather_selection&quot;</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Selection action to perform.</td>
+      <td class="col-desc">Binary selection action. feather_selection is deprecated and returns an explicit unsupported-operation error; use brush softness for soft edges.</td>
     </tr><tr>
       <td class="col-name">texture_id</td>
       <td class="col-type">string</td>
@@ -3061,7 +3061,7 @@
       <div class="card-header">
         <h3 class="card-name">texture_layer_management</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -3169,7 +3169,7 @@
       <div class="card-header">
         <h3 class="card-name">create_texture</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span><span class="badge badge-openworld">open-world</span>
         </div>
       </div>
@@ -3282,7 +3282,7 @@
       <div class="card-header">
         <h3 class="card-name">add_texture_group</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -3364,7 +3364,7 @@
       <div class="card-header">
         <h3 class="card-name">create_pbr_material</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -3428,7 +3428,7 @@
       <div class="card-header">
         <h3 class="card-name">configure_material</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -3535,12 +3535,12 @@
       <div class="card-header">
         <h3 class="card-name">import_texture_set</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span><span class="badge badge-openworld">open-world</span>
         </div>
       </div>
       <p class="card-title">Import Texture Set</p>
-      <p class="card-desc">Imports a Minecraft Bedrock texture_set.json file and creates a PBR material with the associated textures.</p>
+      <p class="card-desc">Imports a Minecraft Bedrock texture_set.json material. Validates constants and decodes referenced PNG/TGA images before adding the material in one Undo step. Missing/invalid images and image paths already used in the project or set are rejected without changing the model. Configure existing materials instead of importing their images again.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3564,7 +3564,7 @@
       <div class="card-header">
         <h3 class="card-name">assign_texture_channel</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -3603,7 +3603,7 @@
       <div class="card-header">
         <h3 class="card-name">save_material_config</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span><span class="badge badge-openworld">open-world</span>
         </div>
       </div>
@@ -3664,12 +3664,12 @@
       <div class="card-header">
         <h3 class="card-name">trigger_action</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span><span class="badge badge-openworld">open-world</span>
         </div>
       </div>
       <p class="card-title">Trigger Action</p>
-      <p class="card-desc">Triggers an action in the Blockbench editor.</p>
+      <p class="card-desc">Triggers an available Blockbench Action. confirmDialog confirms only a new dialog opened synchronously by that action; pre-existing dialogs are left open. Async dialogs require a subsequent fill_dialog call.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3766,7 +3766,7 @@
       <div class="card-header">
         <h3 class="card-name">fill_dialog</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span><span class="badge badge-openworld">open-world</span>
         </div>
       </div>
@@ -3803,7 +3803,7 @@
       <div class="card-header">
         <h3 class="card-name">set_mesh_uv</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -3842,7 +3842,7 @@
       <div class="card-header">
         <h3 class="card-name">auto_uv_mesh</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -3881,7 +3881,7 @@
       <div class="card-header">
         <h3 class="card-name">rotate_mesh_uv</h3>
         <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-stable">stable</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
@@ -4516,7 +4516,7 @@
       </section>
 
       <footer class="page-footer">
-        Generated 2026-09-02T19:02:46.921Z from Zod schemas
+        Generated 2026-09-03T03:15:23.142Z from Zod schemas
       </footer>
     </main>
   </div>
