@@ -39,6 +39,28 @@ The following examples use the default values of `:3000/bb-mcp`
 
 ### Installation
 
+#### Codex
+
+Keep desktop Blockbench open with the MCP Server plugin loaded, then run this
+command on the same computer using the Codex CLI:
+
+```sh
+codex mcp add blockbench --url http://127.0.0.1:3000/bb-mcp
+```
+
+Alternatively, add the following to `~/.codex/config.toml`
+(`%USERPROFILE%\.codex\config.toml` on Windows):
+
+```toml
+[mcp_servers.blockbench]
+url = "http://127.0.0.1:3000/bb-mcp"
+```
+
+Replace the port and endpoint if you changed them in Blockbench settings. Restart
+your Codex client after configuring it. Run `codex mcp list` to confirm the saved
+configuration, or use `/mcp` inside the Codex CLI to check the active connection.
+See the [official Codex MCP documentation](https://developers.openai.com/codex/mcp/)
+for more configuration options.
 
 #### General
 
