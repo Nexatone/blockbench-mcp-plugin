@@ -528,7 +528,8 @@ export function registerMeshTools() {
       const all = mode === "vertex" ? Object.keys(mesh.vertices) : mode === "face" ? Object.keys(mesh.faces) :
         [...new Set(Object.values(mesh.faces).flatMap(face => face.getEdges().map(edge => [...edge].sort().join("-"))))];
       const requested = (elements?.length ? elements.map(String) : all).map((key: string) => mode === "edge" ? key.split("-").sort().join("-") : key);
-      for (const key of requested) if (!all.includes(key)) throw new Error("Unknown " + mode + " key: " + key);
+      const available = new Set(all);
+      for (const key of requested) if (!available.has(key)) throw new Error("Unknown " + mode + " key: " + key);
       const previous = meshSelectionState()[mesh.uuid];
       const selection: MeshComponentSelection = previous ? structuredClone(previous) : { vertices: [], edges: [], faces: [] };
       const field = mode === "vertex" ? "vertices" : mode === "face" ? "faces" : "edges";
@@ -545,7 +546,9 @@ export function registerMeshTools() {
         selection.edges = [...selected].map(key => key.split("-") as [string, string]); selection.faces = [];
         selection.vertices = [...new Set(selection.edges.flat())];
       }
-      Undo.initEdit({ elements: [mesh], selection: true });
+      // Native selection history honors the user's undo_selections preference
+      // without marking the model dirty or recording a geometry edit.
+      Undo.initSelection();
       // Selecting a mesh can clear component selection; install the mask afterwards.
       mesh.select();
       (BarItems.selection_mode as BarSelect<string>).set(mode);
@@ -555,7 +558,7 @@ export function registerMeshTools() {
         selection: true,
       });
 
-      Undo.finishEdit("Select mesh elements");
+      Undo.finishSelection("Select mesh elements");
 
       return JSON.stringify({
         mesh: mesh.name,

@@ -8,6 +8,7 @@ Describe the problem, resulting behavior, and any compatibility/migration impact
 - [ ] Compared the target version with the current base branch.
 - [ ] Updated `package.json` and `CHANGELOG.md` for plugin changes, or explained why not applicable.
 - [ ] Regenerated prompt/API assets and verified matching version values when required.
+- [ ] Updated relevant contributor, agent and installation guidance for changed workflows/contracts.
 
 ## Validation
 

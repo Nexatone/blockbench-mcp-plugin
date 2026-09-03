@@ -25,7 +25,7 @@ See the versioning guide for exact commands, validation and update instructions.
 
 ## Setup & Development
 ```sh
-bun install                # install deps
+bun install --frozen-lockfile # install locked deps with Bun 1.3.8
 bun run dev                # build once with sourcemaps
 bun run dev:watch          # rebuild on change (watch mode)
 bun run build              # minified production build to dist/mcp.js
@@ -109,22 +109,32 @@ the paint settings it changes. Hytale is explicitly deferred; these suites do
 not install optional plugins.
 
 The server accepts loopback access only. Network settings require plugin reload.
-Development prompts come from the bundled generated manifest; re-run `bun run dev`
-after prompt edits. Production falls back to bundled prompts when CDN access fails.
+Development prompts come from the bundled generated manifest. `bun run dev:watch`
+regenerates it before rebuilding after prompt edits; reload the plugin to load
+the new bundle. Production falls back to bundled prompts when CDN access fails.
+
+`bun run test:efficiency:live` verifies the exact build ID from
+`dist/build-info.json`, compact discovery/query results, atomic geometry batches,
+retry/staleness behavior, native selection, validation, imports and texture IDs.
+It preserves original projects and writes `.verification/efficiency-live.json`.
 
 ## Project Structure
 - `index.ts`: Plugin entry; registers server, UI, settings.
 - `server/`: MCP server implementation.
   - `server.ts`: McpServer singleton (official MCP SDK).
   - `tools.ts`: Tool module aggregator importing domain-specific tools.
-  - `tools/`: Tool implementations by domain (animation, camera, cubes, element, import, mesh, paint, project, texture, ui, uv).
+  - `tools/`: Tool implementations by domain, including compact inspection in `model.ts` and geometry transactions in `model-batch.ts`.
   - `resources.ts`: MCP resource definitions.
   - `prompts.ts`: MCP prompts with argument schemas.
+  - `prompt-specs.ts`: Shared prompt metadata for runtime and generated docs.
+  - `resources/model.ts`: Compact project-scoped element/texture resource specs and handlers.
   - `net.ts`: HTTP server and transport handling.
 - `ui/`: Panel, settings, and status bar UI.
 - `lib/`: Shared utilities, factories (`createTool`, `createResource`, `createPrompt`), and Zod schemas.
-- `macros/`: Build-time macros (e.g., prompt embedding).
-- `dist/`: Build outputs (`mcp.js`, maps, copied assets).
+  `editorExecution.ts` owns the shared tool queue and Undo helpers;
+  `modelState.ts` owns revisions, query cursors and bounded serialization.
+- `prompts/`: Markdown fragments and generated manifest; loaded by `lib/promptLoader.ts`.
+- `dist/`: Ignored build outputs (`mcp.js`, maps, copied assets, `build-info.json`).
 
 ## Adding Tools
 Use `createTool()` from `lib/factories.ts`. Tools are organized by domain in `server/tools/` (e.g., `animation.ts`, `paint.ts`, `mesh.ts`). Each domain file exports a registration function that is called from `server/tools.ts`.
@@ -132,23 +142,46 @@ Use `createTool()` from `lib/factories.ts`. Tools are organized by domain in `se
 Example tool in a domain file (e.g., `server/tools/example.ts`):
 ```ts
 import { z } from "zod";
-import { createTool } from "@/lib/factories";
+import { createTool, jsonResult, type ToolSpec } from "@/lib/factories";
+
+export const exampleParameters = z.object({
+  name: z.string().max(256).describe("Name to greet."),
+});
+export const exampleOutput = z.object({ greeting: z.string() });
+export const exampleToolDocs: ToolSpec[] = [{
+  name: "example",
+  description: "Returns a greeting for the supplied name.",
+  annotations: { title: "Example", readOnlyHint: true, openWorldHint: false },
+  parameters: exampleParameters,
+  outputSchema: exampleOutput,
+  status: "stable",
+}];
 
 export function registerExampleTools() {
-  createTool("example", {
-    description: "Does something useful",
-    annotations: { title: "Example" },
-    parameters: z.object({ name: z.string() }),
+  createTool(exampleToolDocs[0].name, {
+    ...exampleToolDocs[0],
+    parameters: exampleParameters,
     async execute({ name }) {
-      return `Hello, ${name}!`;
+      return jsonResult({ greeting: `Hello, ${name}!` });
     },
-  });
+  }, exampleToolDocs[0].status);
 }
 ```
-Then import and call the registration function in `server/tools.ts`.
+Import and call the registration function in `server/tools.ts`. Import the
+`exampleToolDocs` array into `build/docs-manifest.ts` and add it to `toolManifest`
+under the appropriate category. Regenerate docs with `bun run docs:build`.
 
 - Naming: Tools are registered with the name you provide (no automatic prefix).
-- Validate inputs with `zod`. Avoid blocking UI during execution.
+- Keep schemas and tool specs free of Blockbench globals; perform native checks
+  inside `execute`. Validate the full Zod object, including refinements.
+- Prefer bounded structured results and output schemas with UUIDs, counts and
+  revisions. Paginate large collections and make image previews optional.
+- All tool calls use the shared editor queue. Prepare asynchronous work before a
+  short synchronous `withUndoEdit` commit, then recheck project/revision and
+  cancellation. Never await while owning Undo or wrap a native action that already
+  owns a transaction. Refresh only affected preview data where native APIs allow.
+- Set effect annotations from actual behavior; Undo support does not make a
+  delete operation non-destructive or a repeated creation idempotent.
 
 ## Adding Resources
 Use `createResource()` from `lib/factories.ts` in `server/resources.ts`:
@@ -169,7 +202,10 @@ createResource("example", {
   },
 });
 ```
-See existing `projects`, `nodes`, and `textures` examples in `server/resources.ts`.
+Add matching metadata to `build/docs-manifest.ts`. Prefer the shared compact
+resource specs in `server/resources/model.ts` for new model inspection. Legacy
+`nodes://` payloads can contain large render graphs. Index names once per listed
+collection, preserve URI compatibility, and register any advertised collection URI.
 
 ## Adding Prompts
 Use `createPrompt()` from `lib/factories.ts` in `server/prompts.ts`:
@@ -189,7 +225,8 @@ createPrompt("example_prompt", {
   },
 });
 ```
-See `server/prompts.ts` for examples using the `readPrompt` macro to embed prompt text files.
+Use `getPromptContent` from `lib/promptLoader.ts`. Put shared globals-free metadata
+in `server/prompt-specs.ts` so runtime registration and docs agree.
 
 ## Style & Commits
 - TypeScript strict mode; ESNext modules; use the `@/*` path alias.
@@ -200,6 +237,9 @@ See `server/prompts.ts` for examples using the `readPrompt` macro to embed promp
 - Describe scope and intent, link related issues.
 - Add repro and verification steps; include screenshots/GIFs for UI changes.
 - Call out new tools, resources, settings, or breaking changes.
+- Update relevant README/agent installation guidance, CLAUDE and `.github`
+  instructions/prompts/templates alongside the API docs. Preserve historical
+  verification versions and link them to current guidance where necessary.
 
 ## Manual Verification Checklist
 
@@ -213,6 +253,9 @@ version normalization, Undo behavior, saved-project checks and limitations.
 - Settings: Confirm MCP port/endpoint under Settings → General (defaults `3000` and `/bb-mcp`).
 - Server: Open the MCP panel; ensure server shows connected when a client attaches.
 - Tools: Verify new tool appears with a readable title. Using MCP Inspector, call the tool with a small sample payload; confirm no errors and expected side effects (and Undo works when applicable).
-- Resources: In Inspector, resolve a sample URI (e.g., `nodes://<id>` or `textures://<name>`); confirm autocompletion and returned data.
-- Prompts: Load the prompt; check argument autocompletion and that `load` returns content without errors.
+- Resources: In Inspector, list templates and read a concrete URI such as
+  `model://<project UUID>/elements/<element UUID>`; verify bounded returned data.
+  The factory does not implement resource argument completion.
+- Prompts: Check listed arguments and that `prompts/get` returns useful content,
+  including when every optional argument is omitted.
 - UI: Sanity check layout in light/dark themes; verify tool status badges and descriptions render and truncate gracefully.

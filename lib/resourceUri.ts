@@ -51,20 +51,28 @@ export function makeResourceId(
   item: INamedItem,
   siblings: readonly INamedItem[]
 ): string {
-  const slug = slugify(item.name);
-  if (!slug) return item.uuid;
+  return createResourceIdBuilder(siblings)(item);
+}
 
-  const collisionCount = siblings.reduce(
-    (count, sibling) => (slugify(sibling.name) === slug ? count + 1 : count),
-    0
-  );
-
-  if (collisionCount <= 1) {
-    return slug;
+/** Build once per listing. Never cache across editor changes or renames. */
+export function createResourceIdBuilder(items: readonly INamedItem[]): (item: INamedItem) => string {
+  const slugs = new Map<INamedItem, string>();
+  const counts = new Map<string, number>();
+  for (const item of items) {
+    const slug = slugify(item.name);
+    slugs.set(item, slug);
+    counts.set(slug, (counts.get(slug) ?? 0) + 1);
   }
+  return item => {
+    const slug = slugs.get(item) ?? slugify(item.name);
+    if (!slug) return item.uuid;
+    return (counts.get(slug) ?? 0) <= 1 ? slug : `${slug}~${item.uuid.slice(0, UUID_DISAMBIGUATOR_LENGTH)}`;
+  };
+}
 
-  const suffix = item.uuid.slice(0, UUID_DISAMBIGUATOR_LENGTH);
-  return `${slug}~${suffix}`;
+export function createResourceUriBuilder(scope: string, items: readonly INamedItem[]): (item: INamedItem) => string {
+  const idFor = createResourceIdBuilder(items);
+  return item => `${scope}://${idFor(item)}`;
 }
 
 /**

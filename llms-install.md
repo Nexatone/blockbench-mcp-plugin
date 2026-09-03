@@ -4,21 +4,28 @@ This file helps AI assistants configure the Blockbench MCP server connection.
 
 ## Prerequisites
 
-Before configuring the MCP connection, please confirm:
+Reuse a working connection and settings already supplied by the user. Check the
+available MCP connection before asking for missing information or changing client
+configuration. Desktop Blockbench must be open with the MCP Server plugin loaded.
 
-1. **Is Blockbench running?**
-   - The Blockbench desktop application must be open
-   - The MCP plugin must be installed (File > Plugins > Load from URL: `https://itsjosshy.github.io/blockbench-mcp-plugin/nightly/mcp.js`)
-   - For unmerged development work, build and load this checkout's `dist/mcp.js` instead.
+- Normal installation: File > Plugins > Load from URL:
+  `https://itsjosshy.github.io/blockbench-mcp-plugin/nightly/mcp.js`.
+- Unmerged development: build and load this checkout's `dist/mcp.js`; URL installs
+  receive changes only after a successful deployment from `main`.
+- Default endpoint: `http://127.0.0.1:3000/bb-mcp`. Read configured values under
+  Settings > General > MCP Server Port / MCP Server Endpoint when available.
 
-2. **What are your server settings?**
-   - Default: `http://localhost:3000/bb-mcp`
-   - If the port number and endpoint are something other than the default values (`:3000/bb-mcp`), please specify
-   - Settings can be changed in Blockbench: Settings > General > MCP Server Port / MCP Server Endpoint
+Follow [README](README.md) for changing plugin source and client-specific setup.
+Discover the connected version and tools instead of assuming the checkout is live.
+On 1.2.0+, use `get_project_capabilities` to compare the build ID with
+`dist/build-info.json` for local verification; prefer `query_model`, `get_element`
+and `apply_model_batch` for bounded inspection and edits. Preserve unrelated tabs
+and Undo history when checking the connection.
 
 ## Configuration
 
-Once confirmed, add the MCP server to your client:
+If the client still needs configuration, add the MCP server using its existing
+settings. The examples below use placeholders for the port and endpoint:
 
 ### Cline
 

@@ -10,7 +10,7 @@ export const listExportFormatsParameters = z.object({
     .optional()
     .default(false)
     .describe(
-      "If true, only return codecs compatible with the current project's format."
+      "If true, return only the current format's own codec. Other compile-capable codecs may also export this model; false lists all codecs."
     ),
 });
 
@@ -201,7 +201,9 @@ export function registerExportTools() {
           ? codec.getExportOptions()
           : undefined);
 
+      const project = Project;
       const rawResult = await codec.compile(effectiveOptions);
+      if (Project !== project) throw new Error("PROJECT_CHANGED: active project changed during export. Retry for the intended project.");
 
       const isArrayBuffer = rawResult instanceof ArrayBuffer;
       const isBinaryView =
@@ -237,10 +239,12 @@ export function registerExportTools() {
         wrote_to_path = path;
       }
 
-      const fullContent = binaryBuffer
-        ? binaryBuffer.toString("base64")
+      const contentLength = binaryBuffer ? 4 * Math.ceil(binaryBuffer.byteLength / 3) : (text ?? "").length;
+      // Encoding only the necessary prefix preserves legacy truncation exactly.
+      const fullContent = max_content_length === 0 ? "" : binaryBuffer
+        ? binaryBuffer.subarray(0, Math.ceil(max_content_length / 4) * 3).toString("base64")
         : (text ?? "");
-      const truncated = fullContent.length > max_content_length;
+      const truncated = contentLength > max_content_length;
       const returnedContent = max_content_length === 0
         ? null
         : truncated

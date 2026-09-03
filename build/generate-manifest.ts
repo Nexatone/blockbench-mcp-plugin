@@ -3,7 +3,7 @@ import { log } from "./utils";
 import { version } from "../package.json";
 import type { PromptManifest } from "../lib/promptLoader";
 
-async function main() {
+export async function generatePromptManifest() {
   log.header("Prompt Manifest Generator");
 
   const promptsDir = import.meta.dir + "/../prompts";
@@ -40,7 +40,7 @@ async function main() {
   );
 }
 
-main().catch((err) => {
+if (import.meta.main) generatePromptManifest().catch((err) => {
   log.error(`Manifest generation failed: ${err}`);
   process.exit(1);
 });

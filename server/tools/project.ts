@@ -43,6 +43,7 @@ export function registerProjectTools() {
   createTool(projectToolDocs[0].name, {
     ...projectToolDocs[0],
     async execute({ name, format }) {
+      if (!Formats[format]) throw new Error(`UNSUPPORTED_FORMAT: project format "${format}" is unavailable.`);
       const created = newProject(Formats[format]);
 
       if (!created) {

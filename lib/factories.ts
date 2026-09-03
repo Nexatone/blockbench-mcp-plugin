@@ -2,6 +2,9 @@ import { z } from "zod";
 import type { IMCPTool, IMCPPrompt, IMCPResource, StatusType } from "@/types";
 import { getServer } from "@/server/server";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
+import { editorQueue, requireIdleEdit } from "@/lib/editorExecution";
+import { touchProject } from "@/lib/modelState";
 
 /**
  * Declarative tool spec for documentation and registration.
@@ -10,13 +13,9 @@ import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 export interface ToolSpec {
   name: string;
   description: string;
-  annotations?: {
-    title?: string;
-    destructiveHint?: boolean;
-    readOnlyHint?: boolean;
-    openWorldHint?: boolean;
-  };
+  annotations?: ToolAnnotations;
   parameters: z.ZodType;
+  outputSchema?: z.ZodObject<z.ZodRawShape>;
   status: StatusType;
 }
 
@@ -58,6 +57,7 @@ export const resources: Record<string, IMCPResource> = {};
 
 export interface ToolContext {
   reportProgress: (progress: { progress: number; total: number }) => void;
+  signal?: AbortSignal;
 }
 
 interface TextContent {
@@ -73,7 +73,20 @@ interface ImageContent {
 
 type ToolContentItem = TextContent | ImageContent;
 
-type ToolResult = string | { content: ToolContentItem[]; structuredContent?: unknown };
+// Keep the domain boundary small; instantiating the SDK's recursive Zod-derived
+// result union at every tool causes excessive TypeScript work. The SDK still
+// validates registered output schemas at the protocol boundary.
+export interface ToolContentResult {
+  content: ToolContentItem[];
+  structuredContent?: Record<string, unknown>;
+  isError?: boolean;
+}
+export type ToolResult = string | ToolContentResult;
+
+/** Text fallback keeps older clients useful without verbose display prose. */
+export function jsonResult(data: Record<string, unknown>): ToolContentResult {
+  return { content: [{ type: "text", text: JSON.stringify(data) }], structuredContent: data };
+}
 
 interface ToolDefinition {
   title: string;
@@ -81,12 +94,7 @@ interface ToolDefinition {
   inputSchema: Record<string, z.ZodType>;
   outputSchema?: Record<string, z.ZodType> | z.ZodType;
   execute: (args: Record<string, unknown>, context?: ToolContext) => Promise<ToolResult>;
-  annotations?: {
-    title?: string;
-    destructiveHint?: boolean;
-    openWorldHint?: boolean;
-    readOnlyHint?: boolean;
-  };
+  annotations?: ToolAnnotations;
 }
 
 /**
@@ -114,7 +122,7 @@ function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
 
 /**
  * Creates a new MCP tool and registers it with the server using the official SDK.
- * @param name - The tool name suffix (will be prefixed with "blockbench_").
+ * @param name - The exact tool name (no automatic prefix).
  * @param tool - The tool configuration.
  * @param tool.description - The description of the tool.
  * @param tool.annotations - Annotations for the tool (title, hints).
@@ -129,13 +137,9 @@ export function createTool<T extends z.ZodType>(
   name: string,
   tool: {
     description: string;
-    annotations?: {
-      title?: string;
-      destructiveHint?: boolean;
-      openWorldHint?: boolean;
-      readOnlyHint?: boolean;
-    };
+    annotations?: ToolAnnotations;
     parameters: T;
+    outputSchema?: z.ZodObject<z.ZodRawShape>;
     execute: (args: z.infer<T>, context?: ToolContext) => Promise<ToolResult>;
   },
   status: IMCPTool["status"] = "stable",
@@ -151,9 +155,29 @@ export function createTool<T extends z.ZodType>(
     title: tool.annotations?.title ?? tool.description,
     description: tool.description,
     inputSchema,
+    outputSchema: tool.outputSchema?.shape,
     // Keep the full schema: extracting an SDK shape loses object refinements.
     // The UI also uses this entry point, including defaults and transforms.
-    execute: async (args, context) => tool.execute(await tool.parameters.parseAsync(args), context ?? { reportProgress: () => {} }),
+    execute: async (args, context) => {
+      const project = typeof Project === "undefined" ? undefined : Project;
+      const parsed = await tool.parameters.parseAsync(args);
+      return editorQueue.run(async () => {
+        if (name !== "risky_eval" && project !== (typeof Project === "undefined" ? undefined : Project)) {
+          throw new Error("PROJECT_CHANGED: active project changed while this request was queued. Inspect the intended project and retry.");
+        }
+        if (!tool.annotations?.readOnlyHint && name !== "risky_eval") requireIdleEdit();
+        try {
+          return await tool.execute(parsed, context ?? { reportProgress: () => {} });
+        } finally {
+          // Native finished_edit/undo/redo events cover normal edits. Eval can
+          // bypass Undo; conservatively invalidate its active project snapshot.
+          if (name === "risky_eval") {
+            touchProject(project);
+            if (typeof Project !== "undefined" && Project !== project) touchProject(Project);
+          }
+        }
+      }, context?.signal);
+    },
     annotations: tool.annotations,
   };
 
@@ -161,59 +185,7 @@ export function createTool<T extends z.ZodType>(
   toolDefinitions[name] = toolDef;
 
   // Register with server if enabled
-  if (enabled) {
-    type ToolArgs = z.infer<T>;
-
-    const server = getServer();
-
-    const registerTool = server.registerTool.bind(server) as unknown as (
-      toolName: string,
-      definition: {
-        title: string;
-        description: string;
-        inputSchema: Record<string, z.ZodType>;
-        annotations?: ToolDefinition["annotations"];
-      },
-      callback: (args: unknown, extra: unknown) => Promise<unknown>
-    ) => void;
-
-    registerTool(
-      name,
-      {
-        title: toolDef.title,
-        description: toolDef.description,
-        inputSchema,
-        annotations: toolDef.annotations,
-      },
-      async (args: unknown, _extra: unknown) => {
-        // Provide a no-op reportProgress function
-        // Note: Progress notifications require SSE streaming which is not enabled
-        // in the current StreamableHTTPServerTransport configuration (enableJsonResponse: true)
-        const reportProgress: ToolContext["reportProgress"] = () => {};
-
-        const context: ToolContext = { reportProgress };
-        const result = await toolDef.execute(args as Record<string, unknown>, context);
-
-        // Normalize result to MCP CallToolResult format
-        // Tools may return plain strings for convenience, convert to proper format
-        if (typeof result === "string") {
-          return {
-            content: [{ type: "text", text: result }],
-          };
-        }
-
-        // If result already has content array, return as-is
-        if (result && typeof result === "object" && "content" in result) {
-          return result;
-        }
-
-        // Fallback: stringify any other result
-        return {
-          content: [{ type: "text", text: JSON.stringify(result) }],
-        };
-      }
-    );
-  }
+  if (enabled) registerToolOnServer(getServer(), name, toolDef);
 
   tools[name] = {
     name,
@@ -246,8 +218,18 @@ export function getEnabledToolDefinitions() {
  * Used to set up new session servers with the same tools
  */
 export function registerToolsOnServer(server: unknown) {
-  const enabledDefs = getEnabledToolDefinitions();
+  for (const [name, toolDef] of Object.entries(getEnabledToolDefinitions()).sort(([a], [b]) => a.localeCompare(b))) {
+    registerToolOnServer(server, name, toolDef);
+  }
+}
 
+interface RequestContext {
+  signal?: AbortSignal;
+  _meta?: { progressToken?: string | number };
+  sendNotification?: (notification: { method: "notifications/progress"; params: { progressToken: string | number; progress: number; total: number } }) => Promise<void>;
+}
+
+function registerToolOnServer(server: unknown, name: string, toolDef: ToolDefinition): void {
   const typedServer = server as {
     registerTool: (
       toolName: string,
@@ -255,42 +237,51 @@ export function registerToolsOnServer(server: unknown) {
         title: string;
         description: string;
         inputSchema: Record<string, z.ZodType>;
+        outputSchema?: ToolDefinition["outputSchema"];
         annotations?: ToolDefinition["annotations"];
       },
-      callback: (args: unknown, extra: unknown) => Promise<unknown>
+      callback: (args: unknown, extra: RequestContext) => Promise<ToolContentResult>
     ) => void;
   };
 
-  for (const [name, toolDef] of Object.entries(enabledDefs)) {
-    typedServer.registerTool(
-      name,
-      {
-        title: toolDef.title,
-        description: toolDef.description,
-        inputSchema: toolDef.inputSchema,
-        annotations: toolDef.annotations,
-      },
-      async (args: unknown, _extra: unknown) => {
-        const reportProgress: ToolContext["reportProgress"] = () => {};
-        const context: ToolContext = { reportProgress };
-        const result = await toolDef.execute(args as Record<string, unknown>, context);
+  typedServer.registerTool(
+    name,
+    {
+      title: toolDef.title,
+      description: toolDef.description,
+      inputSchema: toolDef.inputSchema,
+      outputSchema: toolDef.outputSchema,
+      annotations: toolDef.annotations,
+    },
+    async (args: unknown, extra: RequestContext) => {
+      const context: ToolContext = {
+        signal: extra.signal,
+        reportProgress(progress) {
+          const progressToken = extra._meta?.progressToken;
+          if (progressToken !== undefined && !extra.signal?.aborted) {
+            // Streaming clients receive progress; JSON-only transports may
+            // drop it. A failed notification must never fail the model edit.
+            void extra.sendNotification?.({ method: "notifications/progress", params: { progressToken, ...progress } }).catch(() => {});
+          }
+        },
+      };
+      const result = await toolDef.execute(args as Record<string, unknown>, context);
 
-        if (typeof result === "string") {
-          return {
-            content: [{ type: "text", text: result }],
-          };
-        }
-
-        if (result && typeof result === "object" && "content" in result) {
-          return result;
-        }
-
+      if (typeof result === "string") {
         return {
-          content: [{ type: "text", text: JSON.stringify(result) }],
+          content: [{ type: "text", text: result }],
         };
       }
-    );
-  }
+
+      if (result && typeof result === "object" && "content" in result) {
+        return result;
+      }
+
+      return {
+        content: [{ type: "text", text: JSON.stringify(result) }],
+      };
+    }
+  );
 }
 
 /**
@@ -550,7 +541,12 @@ export function createPrompt<T extends z.ZodRawShape = Record<string, never>>(
     promptDefinitions[name] = promptDef;
 
     // Register with the singleton server
-    getServer().registerPrompt(
+    const registerPrompt = getServer().registerPrompt.bind(getServer()) as unknown as (
+      name: string,
+      definition: { title: string; description: string; argsSchema?: Record<string, z.ZodType> },
+      generate: PromptDefinition["generate"]
+    ) => void;
+    registerPrompt(
       name,
       {
         title: promptDef.title,

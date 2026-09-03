@@ -1,7 +1,7 @@
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { createResource } from "@/lib/factories";
-import { findByResourceId, makeResourceUri } from "@/lib/resourceUri";
+import { findByResourceId, createResourceUriBuilder } from "@/lib/resourceUri";
 
 // Register projects resource using the factory pattern
 createResource("projects", {
@@ -15,9 +15,10 @@ createResource("projects", {
     if (!projects || projects.length === 0) {
       return { resources: [] };
     }
+    const uriFor = createResourceUriBuilder("projects", projects);
     return {
       resources: projects.map((project) => ({
-        uri: makeResourceUri("projects", project, projects),
+        uri: uriFor(project),
         name: project.name || project.uuid,
         description: `${project.format?.name ?? "Unknown format"} project${project.saved ? "" : " (unsaved)"}`,
         mimeType: "application/json",
@@ -106,9 +107,10 @@ createResource("nodes", {
       return { resources: [] };
     }
     const nodes = Object.values(Project.nodes_3d);
+    const uriFor = createResourceUriBuilder("nodes", nodes);
     return {
       resources: nodes.map((node) => ({
-        uri: makeResourceUri("nodes", node, nodes),
+        uri: uriFor(node),
         name: node.name || node.uuid,
         description: `3D node in current project`,
         mimeType: "application/json",
@@ -157,9 +159,10 @@ createResource("textures", {
     if (textures.length === 0) {
       return { resources: [] };
     }
+    const uriFor = createResourceUriBuilder("textures", textures);
     return {
       resources: textures.map((texture) => ({
-        uri: makeResourceUri("textures", texture, textures),
+        uri: uriFor(texture),
         name: texture.name || texture.uuid,
         mimeType: "application/json",
         description: texture.path ? `Texture from ${texture.path}` : "Embedded texture",
@@ -254,9 +257,10 @@ if (Plugins.installed.some((p: { id: string }) => p.id === "reference_models")) 
       if (referenceModels.length === 0) {
         return { resources: [] };
       }
+      const uriFor = createResourceUriBuilder("reference_models", referenceModels);
       return {
         resources: referenceModels.map((model) => ({
-          uri: makeResourceUri("reference_models", model, referenceModels),
+          uri: uriFor(model),
           name: model.name || model.uuid,
           description: (model as { path?: string }).path
             ? `Reference model from ${(model as { path?: string }).path}`

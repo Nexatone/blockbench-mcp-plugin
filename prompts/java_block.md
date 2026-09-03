@@ -1,3 +1,3 @@
-Create a new block model for Minecraft: Java Edition.
-- Rotations are limited to 22.5 degree steps and one axis per element
-- The model is limited to a size of 3 by 3 by 3 blocks. Display settings can make item models larger though
+# Minecraft Java block format
+
+Use native java_block when requested. Inspect its geometry, rotation and UV capabilities before construction. Validate native coordinate/rotation constraints against the requested Minecraft version; a generic free mesh is not automatically a valid Java block model. Display transforms are separate from element geometry.

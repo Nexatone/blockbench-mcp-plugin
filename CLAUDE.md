@@ -9,6 +9,10 @@ This is Josshy's maintained Blockbench MCP plugin, based on Jason J. Gardner's
 original work. Preserve the GPL-3.0 license and contributor attribution.
 
 The plugin entry is `index.ts`; tool registrations are in `server/tools/`.
+Discover the connected version/tools first; URL installs can lag unmerged changes.
+For 1.2.0+ modeling, inspect project capabilities and compact queries, retain UUIDs,
+then use `apply_model_batch` with a revision and operation ID. Preview once after
+useful work. Use typed open/select/export tools for project round trips.
 Export schemas and tool specs without accessing Blockbench globals at import
 time. Register implementations with `createTool` and include specs in
 `build/docs-manifest.ts`. Verify native Blockbench APIs against the actual editor
@@ -25,8 +29,14 @@ after a bump. Build output is `dist/mcp.js` and must not be committed.
 Prompt loading uses `lib/promptLoader.ts` and `prompts/manifest.json`;
 there is no `macros/readPrompt.ts`.
 
-The current stability decisions and remaining work are in
-[docs/experimental-review.md](docs/experimental-review.md). Preserve unrelated
+The stability decisions and remaining work are in
+[docs/experimental-review.md](docs/experimental-review.md) and
+[docs/efficiency-implementation.md](docs/efficiency-implementation.md). Preserve unrelated
 projects during live checks. Run `bun run test:stability:live` only with the
 intended local build loaded at `http://127.0.0.1:3000/bb-mcp`, without unrelated
 dialogs or simultaneous editor changes.
+Compare `get_project_capabilities` with `dist/build-info.json` before claiming
+verification of a particular build. Run `bun run test:efficiency:live` for compact
+queries, geometry transactions, revision/retry handling and project preservation.
+Keep installation guidance and `.github` instructions/prompts/templates aligned
+with changed workflows; preserve historical reports as evidence of their own builds.

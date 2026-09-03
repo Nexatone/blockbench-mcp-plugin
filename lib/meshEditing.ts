@@ -116,8 +116,9 @@ export function deleteMeshSelection(mesh: Mesh, mode: string, keepVertices: bool
   Undo.initEdit({ elements: [mesh], selection: true });
   const candidates = new Set([...vertices, ...removed.flatMap(([, face]) => face.vertices)]);
   for (const [key] of removed) delete mesh.faces[key];
+  const used = new Set(Object.values(mesh.faces).flatMap(face => face.vertices));
   if (!keepVertices) for (const key of candidates) {
-    if (!Object.values(mesh.faces).some(face => face.vertices.includes(key))) delete mesh.vertices[key];
+    if (!used.has(key)) delete mesh.vertices[key];
   }
   Project!.mesh_selection[mesh.uuid] = { vertices: [], edges: [], faces: [] };
   Undo.finishEdit("Delete mesh components");

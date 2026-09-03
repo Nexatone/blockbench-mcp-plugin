@@ -23,3 +23,14 @@ Blockbench TypeScript support is incomplete, so some workarounds are necessary:
 - Prefer narrow, documented runtime guards or local interfaces for missing types.
   Use targeted TypeScript suppressions only for a verified native API that cannot
   be represented by the installed declarations; do not hide unrelated errors.
+
+Use globals-free exported schemas and tool specs for runtime/docs parity. Prefer
+bounded structured outputs with explicit UUIDs and output schemas; preserve
+existing result defaults unless a versioned compatibility change is intended.
+Keep SDK internals isolated in the factory/transport adapters.
+
+All tools share the editor queue. Preflight references and format support before
+an owned `withUndoEdit` transaction; prepare asynchronous data first and recheck
+project/revision/cancellation before committing. Never await while owning Undo,
+or wrap an API that owns its own transaction. Use targeted `Canvas.updateView`
+updates when supported and native selection history for selection-only changes.

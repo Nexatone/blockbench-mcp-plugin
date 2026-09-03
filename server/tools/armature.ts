@@ -804,10 +804,6 @@ export function registerArmatureTools() {
   createTool(armatureToolDocs[11].name, {
     ...armatureToolDocs[11],
     async execute({ ids, armature_id, include_descendants, clear_selection }) {
-      if (clear_selection) {
-        unselectAllElements();
-      }
-
       let selectedBones: ArmatureBone[] = [];
 
       if (armature_id) {
@@ -828,11 +824,18 @@ export function registerArmatureTools() {
         }
       }
 
-      for (const bone of selectedBones) {
-        bone.select();
-      }
+      // Validate all targets before touching selection. Native select() replaces
+      // selection unless an additive modifier is supplied.
+      selectedBones = [...new Set(selectedBones)];
+      Undo.initSelection();
+      if (clear_selection) unselectAllElements();
+      // markAsSelected(false) selects exactly these bones, without native click
+      // toggling or implicit descendants; include_descendants was resolved above.
+      for (const bone of selectedBones) bone.markAsSelected(false);
+      Blockbench.dispatchEvent("added_to_selection", { added: selectedBones });
 
       updateSelection();
+      Undo.finishSelection("Select armature bones");
 
       return JSON.stringify(
         {

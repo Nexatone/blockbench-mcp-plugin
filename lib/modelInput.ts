@@ -1,13 +1,15 @@
 const MAX_MODEL_BYTES = 16 * 1024 * 1024;
 
-export async function readModelInput(input: string, readFile: (path: string) => string): Promise<Record<string, unknown>> {
+export async function readJsonInput(input: string, readFile: (path: string) => string, signal?: AbortSignal): Promise<Record<string, unknown>> {
+  signal?.throwIfAborted();
   let content = input.trim();
   if (content.startsWith("data:")) {
     const match = /^data:application\/json(?:;charset=utf-8)?(;base64)?,(.*)$/s.exec(content);
     if (!match) throw new Error("Expected an application/json data URL.");
     content = match[1] ? Buffer.from(match[2], "base64").toString("utf8") : decodeURIComponent(match[2]);
   } else if (/^https?:\/\//i.test(content)) {
-    const response = await fetch(content, { signal: AbortSignal.timeout(10000) });
+    const timeout = AbortSignal.timeout(10000);
+    const response = await fetch(content, { signal: signal ? AbortSignal.any([signal, timeout]) : timeout });
     if (!response.ok) throw new Error(`Model download failed: HTTP ${response.status}`);
     if (Number(response.headers.get("content-length")) > MAX_MODEL_BYTES) throw new Error("Model exceeds 16 MiB.");
     const reader = response.body?.getReader();
@@ -35,8 +37,14 @@ export async function readModelInput(input: string, readFile: (path: string) => 
   }
   if (Buffer.byteLength(content) > MAX_MODEL_BYTES) throw new Error("Model exceeds 16 MiB.");
   const model: unknown = JSON.parse(content);
-  if (!model || typeof model !== "object" || Array.isArray(model) ||
-      (!Array.isArray((model as Record<string, unknown>)["minecraft:geometry"]) && !Object.keys(model).some(key => key.startsWith("geometry.")))) {
+  if (!model || typeof model !== "object" || Array.isArray(model)) throw new Error("Expected a JSON object.");
+  signal?.throwIfAborted();
+  return model as Record<string, unknown>;
+}
+
+export async function readModelInput(input: string, readFile: (path: string) => string, signal?: AbortSignal): Promise<Record<string, unknown>> {
+  const model = await readJsonInput(input, readFile, signal);
+  if (!Array.isArray(model["minecraft:geometry"]) && !Object.keys(model).some(key => key.startsWith("geometry."))) {
     throw new Error("Expected a Minecraft Bedrock geometry JSON object.");
   }
   const result = model as Record<string, unknown>;

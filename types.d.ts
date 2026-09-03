@@ -1,4 +1,4 @@
-import type { ToolParameters, Tool, Prompt, PromptArgument } from "fastmcp";
+import type { ZodRawShape } from "zod";
 
 export type StatusType = "stable" | "experimental";
 
@@ -12,7 +12,7 @@ export interface IMCPTool {
 export interface IMCPPrompt {
   name: string;
   description: string;
-  arguments: PromptArgument[];
+  arguments: ZodRawShape;
   enabled: boolean;
   status: StatusType;
 }

@@ -4,7 +4,9 @@ import { textureSetSchema } from "@/lib/textureSet";
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { z } from "zod";
-import { createTool, type ToolSpec } from "@/lib/factories";
+import { requireIdleEdit } from "@/lib/editorExecution";
+import { createTool, jsonResult, type ToolSpec } from "@/lib/factories";
+import { projectRevision } from "@/lib/modelState";
 import {
   getProjectTexture,
   imageContent,
@@ -31,6 +33,7 @@ import {
 export const createTextureParameters = z
   .object({
     name: z.string(),
+    include_preview: z.boolean().default(true).describe("Return the existing texture image by default; false returns only metadata and UUIDs."),
     width: z.number().int().min(16).max(4096).default(16),
     height: z.number().int().min(16).max(4096).default(16),
     data: z
@@ -245,6 +248,7 @@ export const textureToolDocs: ToolSpec[] = [
       openWorldHint: true,
     },
     parameters: createTextureParameters,
+    outputSchema: z.object({project_uuid:z.string(),revision:z.string(),texture_uuid:z.string(),width:z.number(),height:z.number(),layer_ids:z.array(z.string())}),
     status: STATUS_STABLE,
   },
   {
@@ -389,6 +393,7 @@ export const textureToolDocs: ToolSpec[] = [
 export function registerTextureTools() {
   createTool(textureToolDocs[0].name, {
     ...textureToolDocs[0],
+    parameters: createTextureParameters,
     async execute({
       name,
       width,
@@ -400,7 +405,8 @@ export function registerTextureTools() {
       fill_color,
       group,
       layer_name,
-    }) {
+      include_preview,
+    }, context) {
       const targetProject = Project;
       if (!targetProject) throw new Error("Open a project before creating a texture.");
       let texture = new Texture({
@@ -467,15 +473,17 @@ export function registerTextureTools() {
         texture.layers[0].name = layer_name;
       }
       if (Project !== targetProject) throw new Error("The active project changed while the image loaded. Retry in the intended project.");
+      context?.signal?.throwIfAborted();
+      requireIdleEdit();
       Undo.initEdit({ textures: [], bitmap: true });
       texture.add();
 
       Undo.finishEdit("Agent created texture", { textures: [texture], bitmap: true });
       Canvas.updateAll();
 
-      return imageContent({
-        url: texture.getDataURL(),
-      });
+      const result = jsonResult({project_uuid:targetProject.uuid,revision:projectRevision(targetProject),texture_uuid:texture.uuid,width:texture.width,height:texture.height,layer_ids:texture.layers.map(layer=>layer.uuid)});
+      if (include_preview) result.content.unshift(...imageContent({url:texture.getDataURL()}).content);
+      return result;
     },
   }, textureToolDocs[0].status);
 

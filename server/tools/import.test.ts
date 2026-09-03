@@ -23,7 +23,7 @@ function setup() {
     Project: original, Formats: formats,
     newProject(format: object) {
       created.push(format);
-      globals.Project = { selected: true, close: async () => { globals.Project = 0; } };
+      globals.Project = { uuid: crypto.randomUUID(), name: "imported", format, selected: true, close: async () => { globals.Project = 0; } };
       return true;
     },
     Codecs: { bedrock: { parse(_model: unknown, _path: string, options: unknown) { parsed.push("bedrock"); parseOptions.push(options); } }, bedrock_old: { parse() { parsed.push("bedrock_old"); } } },
@@ -73,5 +73,18 @@ test("failed import closes only its new project and reselects the original", asy
   const { original } = setup();
   (globals.Codecs as Record<string, unknown>).bedrock = { parse() { throw new Error("parse failed"); } };
   await expect(execute(geometry({ gui: {} }))).rejects.toThrow("parse failed");
+  expect(globals.Project).toBe(original);
+});
+
+test("native project import validates its format before creating a tab and rolls back parser failures", async () => {
+  const { original, created } = setup();
+  const codecs = globals.Codecs as Record<string, unknown>;
+  codecs.project = { parse() { throw new Error("invalid native fixture"); } };
+  const open = getAllToolDefinitions().open_project;
+  const data = { meta: { model_format: "missing", format_version: "5.0" }, elements: [] };
+  await expect(open.execute({bbmodel:JSON.stringify(data)})).rejects.toThrow("UNSUPPORTED_FORMAT");
+  expect(created).toHaveLength(0);
+  data.meta.model_format = "bedrock";
+  await expect(open.execute({bbmodel:JSON.stringify(data)})).rejects.toThrow("invalid native fixture");
   expect(globals.Project).toBe(original);
 });

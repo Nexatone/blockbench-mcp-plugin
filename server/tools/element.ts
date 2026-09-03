@@ -4,7 +4,7 @@ import { getAnimationClass } from "@/lib/animation";
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { findElementOrThrow, findTextureOrThrow } from "@/lib/util";
+import { findElementOrThrow, findTextureOrThrow, findGroupOrThrow } from "@/lib/util";
 import { STATUS_STABLE } from "@/lib/constants";
 import {
   elementIdSchema,
@@ -293,28 +293,18 @@ const MAX_REGEX_PATTERN_LENGTH = 512;
 // group whose body already contains a quantifier.
 const CATASTROPHIC_BACKTRACK_HEURISTIC = /\([^)]*[+*?][^)]*\)\s*[+*?{]/;
 
-function safeCompileRegex(pattern: string | undefined): RegExp | null {
+export function safeCompileRegex(pattern: string | undefined): RegExp | null {
   if (!pattern) return null;
   if (pattern.length > MAX_REGEX_PATTERN_LENGTH) {
-    console.warn(
-      `[MCP] find_elements_by_criteria: name_pattern rejected — exceeds ${MAX_REGEX_PATTERN_LENGTH} chars (got ${pattern.length}).`
-    );
-    return null;
+    throw new Error(`INVALID_FILTER: name_pattern exceeds ${MAX_REGEX_PATTERN_LENGTH} characters.`);
   }
   if (CATASTROPHIC_BACKTRACK_HEURISTIC.test(pattern)) {
-    console.warn(
-      `[MCP] find_elements_by_criteria: name_pattern rejected — nested quantifiers risk catastrophic backtracking: ${pattern}`
-    );
-    return null;
+    throw new Error("INVALID_FILTER: nested regex quantifiers are unsupported. Use a simpler name_pattern.");
   }
   try {
     return new RegExp(pattern);
-  } catch (err) {
-    console.warn(
-      `[MCP] find_elements_by_criteria: name_pattern failed to compile, ignoring filter:`,
-      err
-    );
-    return null;
+  } catch {
+    throw new Error("INVALID_FILTER: name_pattern is not a valid regular expression.");
   }
 }
 
@@ -353,6 +343,7 @@ export function registerElementTools() {
       selected,
       shade,
     }) {
+      const parentGroup = parent === "root" || !parent ? "root" : findGroupOrThrow(parent);
       Undo.initEdit({
         elements: [],
         groups: [],
@@ -370,10 +361,6 @@ export function registerElementTools() {
         shade: Boolean(shade),
       }).init();
 
-      const parentGroup = parent === "root"
-        ? "root"
-        : // `@ts-expect-error` getAllGroups is a Blockbench global
-          getAllGroups().find((g: Group) => g.name === parent || g.uuid === parent);
       group.addTo(parentGroup);
 
       Undo.finishEdit("Agent added group", { elements: [], groups: [group], outliner: true });

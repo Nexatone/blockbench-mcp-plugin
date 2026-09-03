@@ -19,6 +19,9 @@ import { registerMaterialInstanceTools } from "./tools/material-instances";
 import { registerArmatureTools } from "./tools/armature";
 import { registerHistoryTools } from "./tools/history";
 import { registerExportTools } from "./tools/export";
+import { registerModelTools } from "./tools/model";
+import { registerModelBatchTools } from "./tools/model-batch";
+import { registerModelResources } from "./resources/model";
 
 // Core resource registrations
 import { registerValidatorResources } from "./resources/validator";
@@ -46,6 +49,9 @@ const registrationFunctions = [
   registerUITools,
   registerUVTools,
   registerValidatorResources,
+  registerModelTools,
+  registerModelBatchTools,
+  registerModelResources,
 ];
 
 // Optional plugin registration functions

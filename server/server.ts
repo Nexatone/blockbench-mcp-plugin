@@ -9,10 +9,11 @@ let serverInstance: McpServer | null = null;
  * Creates a new MCP server instance using the official SDK
  */
 export function createServer() {
+  const instructions = typeof Settings === "undefined" ? undefined : Settings.get("mcp_instructions");
   return new McpServer({
     name: "Blockbench MCP",
     version: VERSION,
-  });
+  }, { instructions: typeof instructions === "string" ? instructions : undefined });
 }
 
 /**

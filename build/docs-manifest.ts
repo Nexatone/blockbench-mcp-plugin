@@ -1,5 +1,4 @@
-import { z } from "zod";
-import type { ToolSpec, PromptSpec, ResourceSpec } from "../lib/factories";
+import type { ToolSpec, ResourceSpec } from "../lib/factories";
 
 // Tool docs imports — each file exports schemas at module level with zero Blockbench deps
 import { cameraToolDocs } from "../server/tools/camera";
@@ -18,6 +17,9 @@ import { materialInstanceToolDocs } from "../server/tools/material-instances";
 import { uvToolDocs } from "../server/tools/uv";
 import { historyToolDocs } from "../server/tools/history";
 import { exportToolDocs } from "../server/tools/export";
+import { modelToolDocs } from "../server/tools/model";
+import { modelBatchToolDocs } from "../server/tools/model-batch";
+import { modelResourceDocs } from "../server/resources/model";
 
 export interface CategoryGroup {
   category: string;
@@ -41,77 +43,15 @@ export const toolManifest: CategoryGroup[] = [
   { category: "UI Interaction", tools: uiToolDocs },
   { category: "UV Mapping", tools: uvToolDocs },
   { category: "Hytale Integration", tools: hytaleToolDocs },
+  { category: "Model Workflows", tools: [...modelToolDocs,...modelBatchToolDocs] },
 ];
 
-// Prompt specs defined inline — server/prompts.ts uses macros that complicate direct import
-export const promptDocs: PromptSpec[] = [
-  {
-    name: "blockbench_native_apis",
-    description:
-      "Essential information about Blockbench v5.0 native API security model and requireNativeModule() usage. Use this when working with Node.js modules, file system access, or native APIs in Blockbench plugins.",
-    status: "stable",
-  },
-  {
-    name: "blockbench_code_eval_safety",
-    description:
-      "Critical safety guide for agents using code evaluation/execution tools with Blockbench v5.0+. Contains breaking changes, quick reference, common mistakes, and safe code patterns for native module usage.",
-    status: "stable",
-  },
-  {
-    name: "model_creation_strategy",
-    title: "Model Creation Strategy",
-    description: "A strategy for creating a new 3D model in Blockbench.",
-    argsSchema: z.object({
-      format: z
-        .enum(["java_block", "bedrock"])
-        .optional()
-        .describe("Target model format."),
-      approach: z
-        .enum(["ui", "programmatic", "import"])
-        .optional()
-        .describe("Creation approach to use."),
-    }),
-    status: "stable",
-  },
-  {
-    name: "hytale_model_creation",
-    title: "Hytale Model Creation Guide",
-    description:
-      "Comprehensive guide for creating Hytale character and prop models. Covers format selection, node limits, shading modes, stretch, quads, and best practices.",
-    argsSchema: z.object({
-      format_type: z
-        .enum(["character", "prop", "both"])
-        .describe("Which format type to focus on.")
-        .optional()
-        .default("both"),
-    }),
-    status: "experimental",
-  },
-  {
-    name: "hytale_animation_workflow",
-    title: "Hytale Animation Workflow",
-    description:
-      "Guide for creating animations for Hytale models. Covers 60 FPS timing, quaternion rotations, visibility keyframes, loop modes, and common animation patterns.",
-    argsSchema: z.object({
-      animation_type: z
-        .enum(["walk", "idle", "attack", "general"])
-        .describe("Type of animation to focus on.")
-        .optional()
-        .default("general"),
-    }),
-    status: "experimental",
-  },
-  {
-    name: "hytale_attachments",
-    title: "Hytale Attachments System",
-    description:
-      "Guide for creating and managing attachments in Hytale models. Covers attachment collections, piece bones, modular equipment, and best practices.",
-    status: "experimental",
-  },
-];
+export { promptDocs } from "../server/prompt-specs";
 
 // Resource specs defined inline — server/resources.ts uses Blockbench globals at module level
 export const resourceDocs: ResourceSpec[] = [
+  ...modelResourceDocs,
+  ...["attachments", "pieces", "cubes"].map(kind => ({name:`hytale-${kind}-collection`,uriTemplate:`hytale://${kind}`,title:`Hytale ${kind} collection`,description:`Lists ${kind} in the current Hytale project. Requires the Hytale plugin.`})),
   { name: "projects-collection", uriTemplate: "projects://", title: "All Projects", description: "Lists all open projects and the active project." },
   { name: "textures-collection", uriTemplate: "textures://", title: "All Textures", description: "Lists textures in the active project, including actual bitmap dimensions." },
   { name: "reference_models-collection", uriTemplate: "reference_models://", title: "All Reference Models", description: "Lists reference models when the Reference Models plugin is installed at MCP load time." },

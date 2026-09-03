@@ -52,6 +52,7 @@ body:
         - Elements (groups, outliner, general elements)
         - Import/Export (file formats, project I/O)
         - Mesh (mesh creation, vertices, faces)
+        - Model workflows (compact inspection, validation, atomic batches)
         - Paint (texturing, brush tools, layers)
         - Project (project settings, format)
         - Texture (texture creation, PBR materials)
@@ -86,7 +87,7 @@ body:
     id: output
     attributes:
       label: Expected Output
-      description: What should this feature return? Include example JSON if applicable.
+      description: What should this feature return? Include example JSON, stable object/project IDs, counts and revisions where relevant. Describe pagination or optional previews for large results.
       placeholder: |
         Returns a JSON object with:
         - uuid: string - The UUID of the created element
@@ -109,9 +110,9 @@ body:
       description: |
         If you know which Blockbench APIs or classes should be used, list them here. Reference the Blockbench source code or types if possible.
       placeholder: |
-        - `new Cube({...}).init().addTo(group)` - Creates a cube
-        - `Undo.initEdit({elements: []})` - Start undo tracking
-        - `Canvas.updateAll()` - Refresh the viewport
+        - `new Cube({...}).addTo(group).init()` - Creates a cube in its parent
+        - `withUndoEdit(...)` - Repository helper for a short owned native edit
+        - `Canvas.updateView(...)` - Refreshes affected preview data
     validations:
       required: false
 
@@ -149,10 +150,10 @@ body:
     id: destructive
     attributes:
       label: Is this destructive?
-      description: Could this feature cause irreversible changes or data loss?
+      description: Does this feature delete or replace existing data? Undo support alone does not make an operation non-destructive.
       options:
-        - "No - Safe/reversible with undo"
-        - "Yes - Potentially destructive"
+        - "No - Does not delete or replace existing data"
+        - "Yes - Deletes or replaces existing data"
     validations:
       required: true
 
@@ -162,9 +163,10 @@ body:
       label: Edge Cases & Error Handling
       description: What error conditions should be handled? What happens with invalid input?
       placeholder: |
-        - If element with name already exists: throw error with suggestion to use different name
-        - If position is outside bounds: clamp to valid range
-        - If required texture not found: throw error listing available textures
+        - If a name is ambiguous: request a UUID instead of editing an arbitrary match
+        - If the inspected project/revision changed: reject before editing
+        - If a required reference is missing: reject the whole edit without partial changes
+        - Define whether retrying an identical request creates another edit
     validations:
       required: false
 

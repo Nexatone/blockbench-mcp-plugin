@@ -19,3 +19,15 @@ Keep schemas free of Blockbench globals so documentation can build outside the
 editor. Preserve unrelated model tabs and Undo history during live checks.
 Describe actual validation and limitations; do not claim unperformed live tests.
 Follow the user's existing authorization for remote actions and releases.
+
+Follow the two-part schema/tool-spec registration pattern in `CONTRIBUTING.md`.
+Prefer compact model tools and project-scoped resources with bounded output,
+UUIDs and revisions. Tools share `lib/editorExecution.ts`; prepare asynchronous
+work before a short owned Undo commit and recheck project/revision/cancellation.
+Keep shared prompt metadata in `server/prompt-specs.ts` and regenerate API docs.
+
+Compare the running `get_project_capabilities` build ID with `dist/build-info.json`
+before claiming a specific local build was tested. Hosted URL installs receive
+merged deployments; they do not automatically run an unmerged checkout. When
+workflows change, also update README, CLAUDE, installation guidance and these
+GitHub instruction/prompt entry points. Preserve historical verification results.

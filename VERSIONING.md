@@ -65,7 +65,9 @@ takes precedence; record exceptional resets as such.
    version-only edit does not require a lockfile dependency update.
 4. Verify that `package.json`, `prompts/manifest.json`, `docs/api.json`, the
    displayed API version in `docs/index.html`, and the opening version banner in
-   `dist/mcp.js` agree. The runtime continues to import `VERSION`.
+   `dist/mcp.js` agree. The runtime continues to import `VERSION`. For local 1.2.0+
+   live checks, also compare `get_project_capabilities` with `dist/build-info.json`;
+   matching version strings alone do not identify a particular build.
 5. Include the package, changelog and regenerated tracked assets in the PR. Keep
    `dist/` and `.verification/` untracked. Report test/build/typecheck results and
    any live checks, including whether the running plugin is the intended build.
