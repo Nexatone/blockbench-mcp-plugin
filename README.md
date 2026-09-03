@@ -39,6 +39,12 @@ The following examples use the default values of `:3000/bb-mcp`
 
 ### Installation
 
+#### General
+
+```bash
+npx mcp-add --type http --url "http://localhost:3000/bb-mcp" --scope project
+```
+
 #### Codex
 
 Keep desktop Blockbench open with the MCP Server plugin loaded, then run this
@@ -61,12 +67,6 @@ your Codex client after configuring it. Run `codex mcp list` to confirm the save
 configuration, or use `/mcp` inside the Codex CLI to check the active connection.
 See the [official Codex MCP documentation](https://developers.openai.com/codex/mcp/)
 for more configuration options.
-
-#### General
-
-```bash
-npx mcp-add --type http --url "http://localhost:3000/bb-mcp" --scope project
-```
 
 #### VS Code
 
